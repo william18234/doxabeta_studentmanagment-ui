@@ -160,7 +160,7 @@ export const StudentsView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Student Management</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            DoxabetaCloud Academy Interns (`GET /api/students`)
+            DoxabetaCloud Academy Interns (secure student resource)
           </p>
         </div>
 
@@ -390,7 +390,7 @@ export const StudentsView: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                {isAddModalOpen ? 'Create New Student (POST /api/students)' : 'Update Student (PUT /api/students/{id})'}
+                {isAddModalOpen ? 'Create New Student (secure student create action)' : 'Update Student (secure student update action)'}
               </h3>
               <button
                 onClick={() => {
@@ -520,7 +520,7 @@ export const StudentsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4">
             <h3 className="font-bold text-sm">Assign Mentor to {editingStudent.name}</h3>
-            <p className="text-xs text-slate-500">PUT /api/students/{editingStudent.id}/mentor/{assignMentorId || '{mentorId}'}</p>
+            <p className="text-xs text-slate-500">Secure mentor assignment action</p>
 
             <form onSubmit={handleAssignMentorSubmit} className="space-y-3 text-xs">
               <select

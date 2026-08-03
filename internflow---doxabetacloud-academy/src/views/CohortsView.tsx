@@ -84,7 +84,7 @@ export const CohortsView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Cohort Management</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Academy Cohorts & Class Rosters (`GET /api/cohorts`)
+            Academy Cohorts & Class Rosters (secure cohort resource)
           </p>
         </div>
 
@@ -170,7 +170,7 @@ export const CohortsView: React.FC = () => {
                 className="w-full mt-2 py-1.5 bg-slate-100 hover:bg-purple-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-purple-600 dark:text-purple-300 font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span>View Students (`GET /api/cohorts/{c.id}/students`)</span>
+                <span>View Students (secure cohort roster)</span>
               </button>
             </div>
           ))
@@ -182,7 +182,7 @@ export const CohortsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Create Cohort (POST /api/cohorts)</h3>
+              <h3 className="font-bold text-sm">Create Cohort (secure cohort create action)</h3>
               <button onClick={() => setIsAddModalOpen(false)} className="p-1 text-slate-400">
                 <X className="w-5 h-5" />
               </button>

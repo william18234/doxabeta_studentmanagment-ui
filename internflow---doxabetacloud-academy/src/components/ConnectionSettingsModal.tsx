@@ -8,6 +8,25 @@ interface ConnectionSettingsModalProps {
   onClose: () => void;
 }
 
+const redactBasicAuthHeader = (header: string | null) => {
+  if (!header) return 'None';
+  const [scheme, encoded] = header.split(' ');
+  if (!encoded) return 'Basic ***';
+  return `${scheme} ${encoded.slice(0, 4)}***`;
+};
+
+const redactUserValue = (value?: string) => {
+  if (!value) return 'Anonymous';
+  return `${value.charAt(0)}***${value.slice(-1)}`;
+};
+
+const makeRandomAlias = (value?: string) => {
+  const seeds = ['Aster', 'Blue', 'Nova', 'Iris', 'Rune', 'Sage', 'Luna'];
+  const normalized = value?.toLowerCase() || 'guest';
+  const seedIndex = Math.abs(normalized.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % seeds.length;
+  return `${seeds[seedIndex]}-${Math.floor(100 + Math.random() * 900)}`;
+};
+
 export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = ({ isOpen, onClose }) => {
   const { user, authHeader, connectionMode, setConnectionMode } = useAuth();
   const [testResult, setTestResult] = useState<{ status: 'idle' | 'testing' | 'success' | 'error'; message?: string }>({ status: 'idle' });
@@ -102,12 +121,12 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
           {/* Current Configuration Summary */}
           <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-medium text-slate-500 dark:text-slate-400">Current Base URL:</span>
-              <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">{getBaseUrl()}</span>
+              <span className="font-medium text-slate-500 dark:text-slate-400">Current Base Route:</span>
+              <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">Protected internal route</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="font-medium text-slate-500 dark:text-slate-400">Authenticated User:</span>
-              <span className="font-medium text-slate-900 dark:text-white">{user?.name} ({user?.username})</span>
+              <span className="font-medium text-slate-900 dark:text-white">{makeRandomAlias(user?.username)} ({makeRandomAlias(user?.name)})</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="font-medium text-slate-500 dark:text-slate-400">Active Role:</span>
@@ -121,10 +140,10 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
           <div>
             <div className="flex items-center gap-1.5 mb-1.5 text-slate-700 dark:text-slate-300 font-semibold">
               <Key className="w-3.5 h-3.5 text-amber-500" />
-              <span>Authorization Header (HTTP Basic Auth)</span>
+              <span>Authorization Header Preview</span>
             </div>
             <div className="p-2.5 font-mono text-[11px] bg-slate-900 text-slate-200 rounded-lg overflow-x-auto break-all">
-              {authHeader || 'None'}
+              {redactBasicAuthHeader(authHeader)}
             </div>
           </div>
 
@@ -138,7 +157,7 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
                 className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg text-xs transition-all shadow-xs cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${testResult.status === 'testing' ? 'animate-spin' : ''}`} />
-                <span>Test Backend Health (`/api/health`)</span>
+                <span>Test Backend Health</span>
               </button>
 
               {testResult.status === 'success' && (

@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { ShieldCheck, UserCheck, GraduationCap, Lock, Key, ArrowRight, AlertCircle, Wifi } from 'lucide-react';
 import { ConnectionSettingsModal } from './ConnectionSettingsModal';
 
+const maskValue = (value: string) => value ? `${value.slice(0, 1)}***${value.slice(-1)}` : '***';
+
 export const LoginScreen: React.FC = () => {
   const { login, loginAsDemoUser, isLoading, authError, clearAuthError, connectionMode } = useAuth();
   const [username, setUsername] = useState('admin');
@@ -75,7 +77,7 @@ export const LoginScreen: React.FC = () => {
                   value={username}
                   onChange={e => setUsername(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-slate-900/80 border border-slate-700 rounded-xl text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                  placeholder="admin / mentor / student"
+                  placeholder="***"
                 />
               </div>
             </div>
@@ -88,7 +90,7 @@ export const LoginScreen: React.FC = () => {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-900/80 border border-slate-700 rounded-xl text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500 font-mono"
-                placeholder="admin123 / mentor123 / student123"
+                placeholder="***"
               />
             </div>
 
@@ -120,7 +122,7 @@ export const LoginScreen: React.FC = () => {
               >
                 <ShieldCheck className="w-4 h-4 text-purple-400 mx-auto" />
                 <span className="block text-[11px] font-bold text-white">Admin</span>
-                <span className="block text-[9px] text-slate-400 font-mono">admin123</span>
+                <span className="block text-[9px] text-slate-400 font-mono">{maskValue('admin123')}</span>
               </button>
 
               <button
@@ -134,7 +136,7 @@ export const LoginScreen: React.FC = () => {
               >
                 <UserCheck className="w-4 h-4 text-blue-400 mx-auto" />
                 <span className="block text-[11px] font-bold text-white">Mentor</span>
-                <span className="block text-[9px] text-slate-400 font-mono">mentor123</span>
+                <span className="block text-[9px] text-slate-400 font-mono">{maskValue('mentor123')}</span>
               </button>
 
               <button
@@ -148,7 +150,7 @@ export const LoginScreen: React.FC = () => {
               >
                 <GraduationCap className="w-4 h-4 text-emerald-400 mx-auto" />
                 <span className="block text-[11px] font-bold text-white">Student</span>
-                <span className="block text-[9px] text-slate-400 font-mono">student123</span>
+                <span className="block text-[9px] text-slate-400 font-mono">{maskValue('student123')}</span>
               </button>
             </div>
           </div>

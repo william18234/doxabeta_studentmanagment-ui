@@ -10,16 +10,16 @@ export const FooterStatusBar: React.FC<FooterStatusBarProps> = ({ activeTab }) =
   const { connectionMode } = useAuth();
 
   const endpointMap: Record<TabType, { method: string; path: string }> = {
-    students: { method: 'GET', path: '/api/students' },
-    mentors: { method: 'GET', path: '/api/mentors' },
-    cohorts: { method: 'GET', path: '/api/cohorts' },
-    'daily-hours': { method: 'GET', path: '/api/daily-hours' },
-    reviews: { method: 'GET', path: '/api/reviews' },
-    assignments: { method: 'GET', path: '/api/assignments' },
-    admin: { method: 'GET', path: '/api/admin/overview' }
+    students: { method: 'GET', path: 'secure resource' },
+    mentors: { method: 'GET', path: 'secure resource' },
+    cohorts: { method: 'GET', path: 'secure resource' },
+    'daily-hours': { method: 'GET', path: 'secure resource' },
+    reviews: { method: 'GET', path: 'secure resource' },
+    assignments: { method: 'GET', path: 'secure resource' },
+    admin: { method: 'GET', path: 'secure admin resource' }
   };
 
-  const endpoint = endpointMap[activeTab] || { method: 'GET', path: '/api' };
+  const endpoint = endpointMap[activeTab] || { method: 'GET', path: 'secure route' };
 
   return (
     <footer className="h-8 bg-slate-900 border-t border-slate-800 flex items-center justify-between px-4 shrink-0 text-[10px] text-slate-400 font-mono z-20">

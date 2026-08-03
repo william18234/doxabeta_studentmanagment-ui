@@ -89,7 +89,7 @@ export const AssignmentsView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Assignment Submissions</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Submit projects, code repositories & mentor grading (`POST /api/assignments`, `PUT /api/assignments/:id/grade`)
+            Submit projects, code repositories & mentor grading (secure assignment resource)
           </p>
         </div>
 
@@ -234,7 +234,7 @@ export const AssignmentsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Submit Assignment (POST /api/assignments)</h3>
+              <h3 className="font-bold text-sm">Submit Assignment (secure assignment create action)</h3>
               <button onClick={() => setIsSubmitModalOpen(false)} className="p-1 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
@@ -288,7 +288,7 @@ export const AssignmentsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Grade Submission (`PUT /api/assignments/{gradingAssignment.id}/grade`)</h3>
+              <h3 className="font-bold text-sm">Grade Submission (secure grading action)</h3>
               <button onClick={() => setGradingAssignment(null)} className="p-1 text-slate-400">
                 <X className="w-5 h-5" />
               </button>

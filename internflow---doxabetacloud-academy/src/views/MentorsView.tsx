@@ -92,7 +92,7 @@ export const MentorsView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Mentor Management</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            DoxabetaCloud Academy Faculty & Mentors (`GET /api/mentors`)
+            DoxabetaCloud Academy Faculty & Mentors (secure mentor resource)
           </p>
         </div>
 
@@ -185,7 +185,7 @@ export const MentorsView: React.FC = () => {
                 className="w-full mt-2 py-1.5 bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-300 font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span>View Mentees (`GET /api/mentors/{m.id}/students`)</span>
+                <span>View Mentees (secure mentor student list)</span>
               </button>
             </div>
           ))
@@ -197,7 +197,7 @@ export const MentorsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Add New Mentor (POST /api/mentors)</h3>
+              <h3 className="font-bold text-sm">Add New Mentor (secure mentor create action)</h3>
               <button onClick={() => setIsAddModalOpen(false)} className="p-1 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
