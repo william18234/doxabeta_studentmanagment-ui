@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { Logo } from './Logo';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheck, UserCheck, GraduationCap, Lock, Key, ArrowRight, AlertCircle, Wifi } from 'lucide-react';
+import { Lock, Key, ArrowRight, AlertCircle, Wifi } from 'lucide-react';
 import { ConnectionSettingsModal } from './ConnectionSettingsModal';
 
-const maskValue = (value: string) => value ? `${value.slice(0, 1)}***${value.slice(-1)}` : '***';
-
 export const LoginScreen: React.FC = () => {
-  const { login, loginAsDemoUser, isLoading, authError, clearAuthError, connectionMode } = useAuth();
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const { login, isLoading, authError, clearAuthError } = useAuth();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,9 +48,9 @@ export const LoginScreen: React.FC = () => {
               onClick={() => setIsSettingsOpen(true)}
               className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-indigo-300 transition-colors"
               title="Backend Settings & Connection Status"
+              aria-label="Backend Settings & Connection Status"
             >
               <Wifi className="w-3 h-3 text-emerald-400" />
-              <span>{connectionMode === 'PROXY' ? 'Proxy API' : 'Port 8080'}</span>
             </button>
           </div>
 
@@ -77,7 +75,7 @@ export const LoginScreen: React.FC = () => {
                   value={username}
                   onChange={e => setUsername(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-slate-900/80 border border-slate-700 rounded-xl text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                  placeholder="***"
+                  placeholder="####"
                 />
               </div>
             </div>
@@ -90,7 +88,7 @@ export const LoginScreen: React.FC = () => {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-900/80 border border-slate-700 rounded-xl text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500 font-mono"
-                placeholder="***"
+                placeholder="*****"
               />
             </div>
 
@@ -104,56 +102,6 @@ export const LoginScreen: React.FC = () => {
             </button>
           </form>
 
-          {/* Demo Login Quick Switcher */}
-          <div className="pt-4 border-t border-slate-700/80 space-y-2">
-            <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider text-center">
-              Quick Demo Accounts
-            </p>
-
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setUsername('admin');
-                  setPassword('admin123');
-                  loginAsDemoUser('admin');
-                }}
-                className="p-2 bg-slate-900/90 hover:bg-purple-950/40 border border-slate-700 hover:border-purple-600 rounded-xl text-center space-y-1 transition-all cursor-pointer"
-              >
-                <ShieldCheck className="w-4 h-4 text-purple-400 mx-auto" />
-                <span className="block text-[11px] font-bold text-white">Admin</span>
-                <span className="block text-[9px] text-slate-400 font-mono">{maskValue('admin123')}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setUsername('mentor');
-                  setPassword('mentor123');
-                  loginAsDemoUser('mentor');
-                }}
-                className="p-2 bg-slate-900/90 hover:bg-blue-950/40 border border-slate-700 hover:border-blue-600 rounded-xl text-center space-y-1 transition-all cursor-pointer"
-              >
-                <UserCheck className="w-4 h-4 text-blue-400 mx-auto" />
-                <span className="block text-[11px] font-bold text-white">Mentor</span>
-                <span className="block text-[9px] text-slate-400 font-mono">{maskValue('mentor123')}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setUsername('student');
-                  setPassword('student123');
-                  loginAsDemoUser('student');
-                }}
-                className="p-2 bg-slate-900/90 hover:bg-emerald-950/40 border border-slate-700 hover:border-emerald-600 rounded-xl text-center space-y-1 transition-all cursor-pointer"
-              >
-                <GraduationCap className="w-4 h-4 text-emerald-400 mx-auto" />
-                <span className="block text-[11px] font-bold text-white">Student</span>
-                <span className="block text-[9px] text-slate-400 font-mono">{maskValue('student123')}</span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Footer info */}
