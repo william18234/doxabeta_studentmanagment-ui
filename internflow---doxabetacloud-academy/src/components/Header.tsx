@@ -46,7 +46,11 @@ export const Header: React.FC<HeaderProps> = () => {
             <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
             <span>API Connected:</span>
             <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-              {connectionMode === 'PROXY' ? 'Express Proxy API' : 'localhost:8080'}
+              {connectionMode === 'PROXY'
+                ? 'Express Proxy API'
+                : connectionMode === 'DIRECT_8080'
+                ? 'localhost:8080'
+                : 'Render API'}
             </span>
             <Settings className="w-3 h-3 text-slate-400 ml-1" />
           </button>

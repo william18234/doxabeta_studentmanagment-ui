@@ -2,18 +2,22 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '../types';
 import { apiService, ApiError, setBaseUrl, getBaseUrl } from '../services/api';
 
+const DEFAULT_RENDER_API_BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL || 'https://doxabeta-student-management-1.onrender.com/api';
+
+type ConnectionMode = 'PROXY' | 'DIRECT_8080' | 'DIRECT_RENDER';
+
 interface AuthContextType {
   user: User | null;
   authHeader: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   authError: ApiError | null;
-  connectionMode: 'PROXY' | 'DIRECT_8080';
+  connectionMode: ConnectionMode;
   login: (username: string, password: string) => Promise<boolean>;
   loginAsDemoUser: (role: 'admin' | 'mentor' | 'student') => Promise<boolean>;
   logout: () => void;
   clearAuthError: () => void;
-  setConnectionMode: (mode: 'PROXY' | 'DIRECT_8080') => void;
+  setConnectionMode: (mode: ConnectionMode) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,8 +32,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return localStorage.getItem('internflow_auth_header') || null;
   });
 
-  const [connectionMode, setConnectionModeState] = useState<'PROXY' | 'DIRECT_8080'>(() => {
-    return (localStorage.getItem('internflow_conn_mode') as any) || 'PROXY';
+  const [connectionMode, setConnectionModeState] = useState<ConnectionMode>(() => {
+    return (localStorage.getItem('internflow_conn_mode') as ConnectionMode) || 'DIRECT_RENDER';
   });
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -38,16 +42,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (connectionMode === 'DIRECT_8080') {
       setBaseUrl('http://localhost:8080/api');
+    } else if (connectionMode === 'DIRECT_RENDER') {
+      setBaseUrl(DEFAULT_RENDER_API_BASE_URL);
     } else {
       setBaseUrl('/api');
     }
   }, [connectionMode]);
 
-  const setConnectionMode = (mode: 'PROXY' | 'DIRECT_8080') => {
+  const setConnectionMode = (mode: ConnectionMode) => {
     setConnectionModeState(mode);
     localStorage.setItem('internflow_conn_mode', mode);
     if (mode === 'DIRECT_8080') {
       setBaseUrl('http://localhost:8080/api');
+    } else if (mode === 'DIRECT_RENDER') {
+      setBaseUrl(DEFAULT_RENDER_API_BASE_URL);
     } else {
       setBaseUrl('/api');
     }

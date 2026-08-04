@@ -94,7 +94,25 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
                   <Database className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <span className="text-[11px] opacity-80 leading-relaxed">
-                  `/api` endpoint (Auto-proxies to 8080 or uses mock server fallback)
+                  `/api` endpoint (local proxy / mock fallback)
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setConnectionMode('DIRECT_RENDER')}
+                className={`p-3 text-left border rounded-xl flex flex-col gap-1 transition-all ${
+                  connectionMode === 'DIRECT_RENDER'
+                    ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-900 dark:text-indigo-200 font-medium ring-2 ring-indigo-500/20'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 bg-white dark:bg-slate-800'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-xs">Deployed Render Backend</span>
+                  <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <span className="text-[11px] opacity-80 leading-relaxed">
+                  `https://doxabeta-student-management-1.onrender.com/api`
                 </span>
               </button>
 
@@ -112,7 +130,7 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
                   <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <span className="text-[11px] opacity-80 leading-relaxed">
-                  `http://localhost:8080/api` (Requires local backend running on 8080)
+                  `http://localhost:8080/api` (local dev only)
                 </span>
               </button>
             </div>
