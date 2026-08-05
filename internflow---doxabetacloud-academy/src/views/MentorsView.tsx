@@ -21,6 +21,7 @@ export const MentorsView: React.FC = () => {
   // Add Mentor Modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formData, setFormData] = useState({
+    code: 'MEN001',
     name: '',
     email: '',
     phone: '',
@@ -69,6 +70,7 @@ export const MentorsView: React.FC = () => {
     if (!authHeader) return;
     try {
       const payload = {
+        code: formData.code || 'MEN001',
         name: formData.name || '',
         email: formData.email || '',
         phone: formData.phone || '',
@@ -79,7 +81,7 @@ export const MentorsView: React.FC = () => {
       };
       await apiService.createMentor(authHeader, payload);
       setIsAddModalOpen(false);
-      setFormData({ name: '', email: '', phone: '', title: 'Senior Cloud Architect', department: 'Cloud Infrastructure & DevOps', maxMentees: 10, bio: '' });
+      setFormData({ code: 'MEN001', name: '', email: '', phone: '', title: 'Senior Cloud Architect', department: 'Cloud Infrastructure & DevOps', maxMentees: 10, bio: '' });
       fetchMentors();
     } catch (err: any) {
       setError(err);
@@ -215,7 +217,19 @@ export const MentorsView: React.FC = () => {
 
             <form onSubmit={handleCreateMentor} className="space-y-3 text-xs">
               <div>
-                <label className="block font-semibold mb-1">Full Name</label>
+                <label className="block font-semibold mb-1">Mentor Code (code)</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.code}
+                  onChange={e => setFormData({ ...formData, code: e.target.value })}
+                  className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800 font-mono"
+                  placeholder="e.g. MEN001"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Name (name)</label>
                 <input
                   type="text"
                   required
@@ -227,7 +241,7 @@ export const MentorsView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Email</label>
+                <label className="block font-semibold mb-1">Email (email)</label>
                 <input
                   type="email"
                   required
@@ -240,7 +254,18 @@ export const MentorsView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">Title</label>
+                  <label className="block font-semibold mb-1">Phone (phone)</label>
+                  <input
+                    type="text"
+                    value={formData.phone}
+                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
+                    placeholder="+1 (555) 000-0000"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold mb-1">Title (title)</label>
                   <input
                     type="text"
                     value={formData.title}
@@ -248,9 +273,21 @@ export const MentorsView: React.FC = () => {
                     className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold mb-1">Department (department)</label>
+                  <input
+                    type="text"
+                    value={formData.department}
+                    onChange={e => setFormData({ ...formData, department: e.target.value })}
+                    className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
+                  />
+                </div>
 
                 <div>
-                  <label className="block font-semibold mb-1">Max Capacity</label>
+                  <label className="block font-semibold mb-1">Max Mentees (maxMentees)</label>
                   <input
                     type="number"
                     value={formData.maxMentees}
@@ -261,17 +298,7 @@ export const MentorsView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Department</label>
-                <input
-                  type="text"
-                  value={formData.department}
-                  onChange={e => setFormData({ ...formData, department: e.target.value })}
-                  className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-1">Bio</label>
+                <label className="block font-semibold mb-1">Bio (bio)</label>
                 <textarea
                   value={formData.bio}
                   onChange={e => setFormData({ ...formData, bio: e.target.value })}

@@ -42,13 +42,14 @@ export const StudentsView: React.FC = () => {
 
   // Form states
   const [formData, setFormData] = useState({
+    code: 'STU001',
     name: '',
     email: '',
     phone: '',
     mentorId: '',
     cohortId: '',
     track: 'Cloud & DevOps',
-    status: 'Active' as const,
+    status: 'ACTIVE' as const,
     bio: ''
   });
 
@@ -91,18 +92,19 @@ export const StudentsView: React.FC = () => {
     if (!authHeader) return;
     try {
       const payload = {
+        code: formData.code || 'STU001',
         name: formData.name || '',
         email: formData.email || '',
+        status: formData.status || 'ACTIVE',
+        cohortId: formData.cohortId ? Number(formData.cohortId) : null,
+        mentorId: formData.mentorId ? Number(formData.mentorId) : null,
         phone: formData.phone || '',
-        mentorId: formData.mentorId ? Number(formData.mentorId) : 0,
-        cohortId: formData.cohortId ? Number(formData.cohortId) : 0,
         track: formData.track || 'Cloud & DevOps',
-        status: formData.status || 'Active',
         bio: formData.bio || ''
       };
       await apiService.createStudent(authHeader, payload);
       setIsAddModalOpen(false);
-      setFormData({ name: '', email: '', phone: '', mentorId: '', cohortId: '', track: 'Cloud & DevOps', status: 'Active', bio: '' });
+      setFormData({ code: 'STU001', name: '', email: '', phone: '', mentorId: '', cohortId: '', track: 'Cloud & DevOps', status: 'ACTIVE', bio: '' });
       fetchInitialData();
     } catch (err: any) {
       setError(err);
@@ -113,7 +115,18 @@ export const StudentsView: React.FC = () => {
     e.preventDefault();
     if (!authHeader || !editingStudent) return;
     try {
-      await apiService.updateStudent(authHeader, editingStudent.id, formData);
+      const payload = {
+        code: formData.code || (editingStudent as any).code || 'STU001',
+        name: formData.name || editingStudent.name || '',
+        email: formData.email || editingStudent.email || '',
+        status: formData.status || 'ACTIVE',
+        cohortId: formData.cohortId ? Number(formData.cohortId) : null,
+        mentorId: formData.mentorId ? Number(formData.mentorId) : null,
+        phone: formData.phone || '',
+        track: formData.track || editingStudent.track || 'Cloud & DevOps',
+        bio: formData.bio || editingStudent.bio || ''
+      };
+      await apiService.updateStudent(authHeader, editingStudent.id, payload);
       setIsEditModalOpen(false);
       setEditingStudent(null);
       fetchInitialData();
@@ -149,6 +162,7 @@ export const StudentsView: React.FC = () => {
   const openEditModal = (s: Student) => {
     setEditingStudent(s);
     setFormData({
+      code: (s as any).code || 'STU001',
       name: s.name,
       email: s.email,
       phone: s.phone || '',
@@ -195,7 +209,17 @@ export const StudentsView: React.FC = () => {
           {isStaff ? (
             <button
               onClick={() => {
-                setFormData({ name: '', email: '', phone: '', mentorId: '', cohortId: '', track: 'Cloud & DevOps', status: 'Active', bio: '' });
+                setFormData({
+                  code: 'STU001',
+                  name: '',
+                  email: '',
+                  phone: '',
+                  mentorId: mentors.length > 0 ? String(mentors[0].id) : '',
+                  cohortId: cohorts.length > 0 ? String(cohorts[0].id) : '',
+                  track: 'Cloud & DevOps',
+                  status: 'ACTIVE',
+                  bio: ''
+                });
                 setIsAddModalOpen(true);
               }}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-all cursor-pointer"
@@ -266,10 +290,10 @@ export const StudentsView: React.FC = () => {
             className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100"
           >
             <option value="">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Graduated">Graduated</option>
-            <option value="On Leave">On Leave</option>
-            <option value="Inactive">Inactive</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+            <option value="GRADUATED">GRADUATED</option>
+            <option value="SUSPENDED">SUSPENDED</option>
           </select>
         </div>
       </div>
@@ -342,10 +366,12 @@ export const StudentsView: React.FC = () => {
                     <td className="px-4 py-3">
                       <span
                         className={`inline-block px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${
-                          s.status === 'Active'
+                          s.status === 'ACTIVE' || s.status === 'Active'
                             ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                            : s.status === 'Graduated'
+                            : s.status === 'GRADUATED' || s.status === 'Graduated'
                             ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300'
+                            : s.status === 'SUSPENDED'
+                            ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
                             : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                         }`}
                       >
@@ -415,7 +441,19 @@ export const StudentsView: React.FC = () => {
 
             <form onSubmit={isAddModalOpen ? handleCreateStudent : handleUpdateStudent} className="space-y-3 text-xs">
               <div>
-                <label className="block font-semibold mb-1">Full Name</label>
+                <label className="block font-semibold mb-1">Student Code (code)</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.code}
+                  onChange={e => setFormData({ ...formData, code: e.target.value })}
+                  className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded-lg font-mono"
+                  placeholder="e.g. STU001"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Name (name)</label>
                 <input
                   type="text"
                   required
@@ -427,7 +465,7 @@ export const StudentsView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Email Address</label>
+                <label className="block font-semibold mb-1">Email (email)</label>
                 <input
                   type="email"
                   required
@@ -438,9 +476,9 @@ export const StudentsView: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">Phone</label>
+                  <label className="block font-semibold mb-1">Phone (phone)</label>
                   <input
                     type="text"
                     value={formData.phone}
@@ -451,7 +489,7 @@ export const StudentsView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-semibold mb-1">Track</label>
+                  <label className="block font-semibold mb-1">Track (track)</label>
                   <input
                     type="text"
                     value={formData.track}
@@ -460,40 +498,54 @@ export const StudentsView: React.FC = () => {
                     placeholder="Cloud & DevOps"
                   />
                 </div>
+
+                <div>
+                  <label className="block font-semibold mb-1">Status (status)</label>
+                  <select
+                    value={formData.status}
+                    onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                    className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded-lg font-mono font-semibold"
+                  >
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="INACTIVE">INACTIVE</option>
+                    <option value="GRADUATED">GRADUATED</option>
+                    <option value="SUSPENDED">SUSPENDED</option>
+                  </select>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">Assigned Mentor</label>
+                  <label className="block font-semibold mb-1">Mentor (mentorId)</label>
                   <select
                     value={formData.mentorId}
                     onChange={e => setFormData({ ...formData, mentorId: e.target.value })}
                     className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded-lg"
                   >
-                    <option value="">None</option>
+                    <option value="">Select Mentor</option>
                     {(Array.isArray(mentors) ? mentors : []).map(m => (
-                      <option key={m.id} value={m.id}>{m.name}</option>
+                      <option key={m.id} value={m.id}>{m.name} (ID: {m.id})</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-semibold mb-1">Cohort</label>
+                  <label className="block font-semibold mb-1">Cohort (cohortId)</label>
                   <select
                     value={formData.cohortId}
                     onChange={e => setFormData({ ...formData, cohortId: e.target.value })}
                     className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded-lg"
                   >
-                    <option value="">None</option>
+                    <option value="">Select Cohort</option>
                     {(Array.isArray(cohorts) ? cohorts : []).map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                      <option key={c.id} value={c.id}>{c.name} (ID: {c.id})</option>
                     ))}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Bio / Notes</label>
+                <label className="block font-semibold mb-1">Bio (bio)</label>
                 <textarea
                   value={formData.bio}
                   onChange={e => setFormData({ ...formData, bio: e.target.value })}

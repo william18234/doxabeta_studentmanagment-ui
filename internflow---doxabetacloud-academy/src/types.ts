@@ -11,21 +11,23 @@ export interface User {
 
 export interface Student {
   id: string;
+  code?: string;
   name: string;
   email: string;
   phone?: string;
-  mentorId?: string | number;
+  mentorId?: string | number | null;
   mentorName?: string;
-  cohortId?: string | number;
+  cohortId?: string | number | null;
   cohortName?: string;
-  status: 'Active' | 'Graduated' | 'On Leave' | 'Inactive';
+  status: 'ACTIVE' | 'INACTIVE' | 'GRADUATED' | 'SUSPENDED' | 'Active' | 'Graduated' | 'On Leave' | 'Inactive';
   track: string;
-  startDate: string;
+  startDate?: string;
   bio?: string;
 }
 
 export interface Mentor {
   id: string;
+  code?: string;
   name: string;
   email: string;
   phone?: string;
