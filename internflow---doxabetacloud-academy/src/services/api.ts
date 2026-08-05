@@ -6,7 +6,6 @@ import {
   Review,
   Assignment,
   AdminOverview,
-  User,
   ApiErrorResponse
 } from '../types';
 
@@ -22,8 +21,8 @@ export class ApiError extends Error {
   }
 }
 
-// Configurable base URL: Defaults to '/api' which works both locally and via our Express proxy
-let baseUrlSetting = '/api';
+// Correct backend base URL
+let baseUrlSetting = 'https://doxabeta-student-management-1.onrender.com/api';
 
 export function getBaseUrl(): string {
   return baseUrlSetting;
@@ -34,7 +33,9 @@ export function setBaseUrl(url: string) {
 }
 
 /**
- * Executes API requests with Basic Authentication headers.
+ * Executes API requests.
+ * GET requests do NOT use auth.
+ * POST/PUT requests MUST use Basic Auth.
  */
 async function request<T>(
   endpoint: string,
@@ -46,7 +47,8 @@ async function request<T>(
     'Accept': 'application/json'
   };
 
-  if (authHeader) {
+  // Only attach Authorization for POST/PUT
+  if (authHeader && (method === 'POST' || method === 'PUT')) {
     headers['Authorization'] = authHeader;
   }
 
@@ -64,6 +66,7 @@ async function request<T>(
       body: body ? JSON.stringify(body) : undefined
     });
 
+    // Handle non-OK responses
     if (!response.ok) {
       let errData: ApiErrorResponse = {
         error: `HTTP ${response.status} ${response.statusText}`,
@@ -75,13 +78,23 @@ async function request<T>(
         if (json.error) errData.error = json.error;
         if (json.details) errData.details = json.details;
       } catch {
-        // Fallback text parsing
+        // Response was HTML or empty — avoid crashing
       }
 
       throw new ApiError(errData.error, response.status, errData.details);
     }
 
-    return await response.json();
+    // Try parsing JSON safely
+    try {
+      return await response.json();
+    } catch {
+      throw new ApiError(
+        'Invalid JSON response from backend',
+        500,
+        `Backend returned non-JSON content at ${fullUrl}`
+      );
+    }
+
   } catch (error: any) {
     if (error instanceof ApiError) {
       throw error;
@@ -95,12 +108,9 @@ async function request<T>(
 }
 
 export const apiService = {
-  // Auth & Profile
-  getMe: (authHeader: string): Promise<User> => request<User>('/me', 'GET', authHeader),
 
   // Student Management
   getStudents: (
-    authHeader: string,
     params?: { mentorId?: string; cohort?: string; cohortId?: string; status?: string; search?: string }
   ): Promise<Student[]> => {
     const searchParams = new URLSearchParams();
@@ -111,11 +121,11 @@ export const apiService = {
     if (params?.search) searchParams.append('search', params.search);
 
     const query = searchParams.toString();
-    return request<Student[]>(`/students${query ? `?${query}` : ''}`, 'GET', authHeader);
+    return request<Student[]>(`/students${query ? `?${query}` : ''}`, 'GET');
   },
 
-  getStudentById: (authHeader: string, id: string): Promise<Student> =>
-    request<Student>(`/students/${id}`, 'GET', authHeader),
+  getStudentById: (id: string): Promise<Student> =>
+    request<Student>(`/students/${id}`, 'GET'),
 
   createStudent: (authHeader: string, data: Partial<Student>): Promise<Student> =>
     request<Student>('/students', 'POST', authHeader, data),
@@ -130,50 +140,50 @@ export const apiService = {
     request<Student>(`/students/${studentId}/cohort`, 'PUT', authHeader, { cohortId }),
 
   // Mentor Management
-  getMentors: (authHeader: string): Promise<Mentor[]> =>
-    request<Mentor[]>('/mentors', 'GET', authHeader),
+  getMentors: (): Promise<Mentor[]> =>
+    request<Mentor[]>('/mentors', 'GET'),
 
-  getMentorById: (authHeader: string, id: string): Promise<Mentor> =>
-    request<Mentor>(`/mentors/${id}`, 'GET', authHeader),
+  getMentorById: (id: string): Promise<Mentor> =>
+    request<Mentor>(`/mentors/${id}`, 'GET'),
 
   createMentor: (authHeader: string, data: Partial<Mentor>): Promise<Mentor> =>
     request<Mentor>('/mentors', 'POST', authHeader, data),
 
-  getMentorStudents: (authHeader: string, mentorId: string): Promise<Student[]> =>
-    request<Student[]>(`/mentors/${mentorId}/students`, 'GET', authHeader),
+  getMentorStudents: (mentorId: string): Promise<Student[]> =>
+    request<Student[]>(`/mentors/${mentorId}/students`, 'GET'),
 
   // Cohort Management
-  getCohorts: (authHeader: string): Promise<Cohort[]> =>
-    request<Cohort[]>('/cohorts', 'GET', authHeader),
+  getCohorts: (): Promise<Cohort[]> =>
+    request<Cohort[]>('/cohorts', 'GET'),
 
   createCohort: (authHeader: string, data: Partial<Cohort>): Promise<Cohort> =>
     request<Cohort>('/cohorts', 'POST', authHeader, data),
 
-  getCohortStudents: (authHeader: string, cohortId: string): Promise<Student[]> =>
-    request<Student[]>(`/cohorts/${cohortId}/students`, 'GET', authHeader),
+  getCohortStudents: (cohortId: string): Promise<Student[]> =>
+    request<Student[]>(`/cohorts/${cohortId}/students`, 'GET'),
 
-  // Daily Hours Tracking
-  getDailyHours: (authHeader: string, studentId?: string): Promise<DailyHour[]> => {
+  // Daily Hours
+  getDailyHours: (studentId?: string): Promise<DailyHour[]> => {
     const query = studentId ? `?studentId=${studentId}` : '';
-    return request<DailyHour[]>(`/daily-hours${query}`, 'GET', authHeader);
+    return request<DailyHour[]>(`/daily-hours${query}`, 'GET');
   },
 
   logDailyHours: (authHeader: string, data: Partial<DailyHour>): Promise<DailyHour> =>
     request<DailyHour>('/daily-hours', 'POST', authHeader, data),
 
-  // Review Management
-  getReviews: (authHeader: string, studentId?: string): Promise<Review[]> => {
+  // Reviews
+  getReviews: (studentId?: string): Promise<Review[]> => {
     const query = studentId ? `?studentId=${studentId}` : '';
-    return request<Review[]>(`/reviews${query}`, 'GET', authHeader);
+    return request<Review[]>(`/reviews${query}`, 'GET');
   },
 
   createReview: (authHeader: string, data: Partial<Review>): Promise<Review> =>
     request<Review>('/reviews', 'POST', authHeader, data),
 
-  // Assignment Management
-  getAssignments: (authHeader: string, studentId?: string): Promise<Assignment[]> => {
+  // Assignments
+  getAssignments: (studentId?: string): Promise<Assignment[]> => {
     const query = studentId ? `?studentId=${studentId}` : '';
-    return request<Assignment[]>(`/assignments${query}`, 'GET', authHeader);
+    return request<Assignment[]>(`/assignments${query}`, 'GET');
   },
 
   submitAssignment: (authHeader: string, data: Partial<Assignment>): Promise<Assignment> =>
@@ -182,12 +192,12 @@ export const apiService = {
   gradeAssignment: (authHeader: string, id: string, data: { score: number; feedback?: string }): Promise<Assignment> =>
     request<Assignment>(`/assignments/${id}/grade`, 'PUT', authHeader, data),
 
-  // Admin Dashboard
-  getAdminOverview: (authHeader: string): Promise<AdminOverview> =>
-    request<AdminOverview>('/admin/overview', 'GET', authHeader),
+  // Admin
+  getAdminOverview: (): Promise<AdminOverview> =>
+    request<AdminOverview>('/admin/overview', 'GET'),
 
-  getAdminRawJson: (authHeader: string): Promise<any> =>
-    request<any>('/admin/raw-json', 'GET', authHeader),
+  getAdminRawJson: (): Promise<any> =>
+    request<any>('/admin/raw-json', 'GET'),
 
   seedAdminData: (authHeader: string): Promise<{ message: string }> =>
     request<{ message: string }>('/admin/seed', 'POST', authHeader)
