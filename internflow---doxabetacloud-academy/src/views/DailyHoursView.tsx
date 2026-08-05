@@ -39,8 +39,8 @@ export const DailyHoursView: React.FC = () => {
         apiService.getDailyHours(authHeader, selectedStudentId || undefined),
         apiService.getStudents(authHeader)
       ]);
-      setDailyHours(hoursData);
-      setStudents(studentsData);
+      setDailyHours(Array.isArray(hoursData) ? hoursData : []);
+      setStudents(Array.isArray(studentsData) ? studentsData : []);
     } catch (err: any) {
       setError(err);
     } finally {
@@ -75,7 +75,8 @@ export const DailyHoursView: React.FC = () => {
     }
   };
 
-  const filteredHours = dailyHours.filter(h => {
+  const safeHours = Array.isArray(dailyHours) ? dailyHours : [];
+  const filteredHours = safeHours.filter(h => {
     if (!selectedCategory) return true;
     return h.category.toLowerCase().includes(selectedCategory.toLowerCase());
   });
@@ -91,7 +92,7 @@ export const DailyHoursView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Daily Hours Tracking</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Log work hours, projects & task activities (secure daily hours resource)
+            Log work hours, projects & task activities (`GET /api/daily-hours`, `POST /api/daily-hours`)
           </p>
         </div>
 
@@ -165,8 +166,8 @@ export const DailyHoursView: React.FC = () => {
             onChange={e => setSelectedStudentId(e.target.value)}
             className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border rounded-lg"
           >
-            <option value="">All Students (secure daily hours view)</option>
-            {students.map(s => (
+            <option value="">All Students (`GET /api/daily-hours`)</option>
+            {(Array.isArray(students) ? students : []).map(s => (
               <option key={s.id} value={s.id}>
                 {s.name} ({s.track})
               </option>
@@ -251,7 +252,7 @@ export const DailyHoursView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Log Daily Hours (secure daily hours create action)</h3>
+              <h3 className="font-bold text-sm">Log Daily Hours (POST /api/daily-hours)</h3>
               <button onClick={() => setIsLogModalOpen(false)} className="p-1 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
@@ -266,7 +267,7 @@ export const DailyHoursView: React.FC = () => {
                     onChange={e => setFormData({ ...formData, studentId: e.target.value })}
                     className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
                   >
-                    {students.map(s => (
+                    {(Array.isArray(students) ? students : []).map(s => (
                       <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
                   </select>

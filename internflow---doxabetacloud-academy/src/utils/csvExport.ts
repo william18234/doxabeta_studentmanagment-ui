@@ -7,7 +7,7 @@ export function exportToCSV<T extends Record<string, any>>(
   data: T[],
   columnMapping?: Record<keyof T | string, string>
 ) {
-  if (!data || data.length === 0) {
+  if (!data || !Array.isArray(data) || data.length === 0) {
     alert('No data available to export.');
     return;
   }

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ConnectionSettingsModal } from './ConnectionSettingsModal';
-import { ShieldCheck, UserCheck, GraduationCap, LogOut, Settings, Wifi } from 'lucide-react';
+import { ShieldCheck, UserCheck, GraduationCap, LogOut, Settings, Menu } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: string;
+  onToggleSidebar?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = () => {
+export const Header: React.FC<HeaderProps> = ({ activeTab, onToggleSidebar }) => {
   const { user, logout, connectionMode, loginAsDemoUser } = useAuth();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
@@ -35,24 +36,35 @@ export const Header: React.FC<HeaderProps> = () => {
 
   return (
     <>
-      <header className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 shrink-0 z-30 transition-colors">
-        {/* Left Side: API Connected Pill */}
-        <div className="flex items-center gap-4">
+      <header className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 shrink-0 z-30 transition-colors">
+        {/* Left Side: Navigation Toggle & API Connected Pill */}
+        <div className="flex items-center gap-3">
+          {onToggleSidebar && (
+            <button
+              onClick={onToggleSidebar}
+              className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+              title="Toggle Menu"
+              aria-label="Toggle navigation menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
+
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/80 px-3 py-1.5 rounded-md text-xs font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer transition-colors"
+            className="bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/80 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer transition-colors"
             title="Configure Backend Connection"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
-            <span>API Connected:</span>
-            <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-              {connectionMode === 'PROXY'
-                ? 'Express Proxy API'
-                : connectionMode === 'DIRECT_8080'
-                ? 'localhost:8080'
-                : 'Render API'}
+            <span className="hidden sm:inline">API:</span>
+            <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-[11px] sm:text-xs">
+              {connectionMode === 'PRODUCTION'
+                ? 'Render Live'
+                : connectionMode === 'PROXY'
+                ? 'Express Proxy'
+                : 'localhost'}
             </span>
-            <Settings className="w-3 h-3 text-slate-400 ml-1" />
+            <Settings className="w-3 h-3 text-slate-400 ml-0.5" />
           </button>
         </div>
 

@@ -38,8 +38,8 @@ export const ReviewsView: React.FC = () => {
         apiService.getReviews(authHeader, selectedStudentId || undefined),
         apiService.getStudents(authHeader)
       ]);
-      setReviews(reviewsData);
-      setStudents(studentsData);
+      setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+      setStudents(Array.isArray(studentsData) ? studentsData : []);
     } catch (err: any) {
       setError(err);
     } finally {
@@ -81,7 +81,7 @@ export const ReviewsView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Performance Reviews</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Mentor Evaluations & Skill Rubrics (secure review resource)
+            Mentor Evaluations & Skill Rubrics (`GET /api/reviews`, `POST /api/reviews`)
           </p>
         </div>
 
@@ -129,8 +129,8 @@ export const ReviewsView: React.FC = () => {
             onChange={e => setSelectedStudentId(e.target.value)}
             className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border rounded-lg"
           >
-            <option value="">All Students (secure review view)</option>
-            {students.map(s => (
+            <option value="">All Students (`GET /api/reviews`)</option>
+            {(Array.isArray(students) ? students : []).map(s => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
@@ -141,7 +141,7 @@ export const ReviewsView: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {isLoading ? (
           <div className="col-span-full text-center py-12 text-slate-400 text-xs">Loading reviews...</div>
-        ) : reviews.length === 0 ? (
+        ) : !Array.isArray(reviews) || reviews.length === 0 ? (
           <div className="col-span-full text-center py-12 text-slate-400 text-xs">No performance reviews recorded yet.</div>
         ) : (
           reviews.map(r => (
@@ -200,7 +200,7 @@ export const ReviewsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Write Performance Review (secure review create action)</h3>
+              <h3 className="font-bold text-sm">Write Performance Review (POST /api/reviews)</h3>
               <button onClick={() => setIsModalOpen(false)} className="p-1 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
@@ -216,7 +216,7 @@ export const ReviewsView: React.FC = () => {
                   className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
                 >
                   <option value="">Select Student...</option>
-                  {students.map(s => (
+                  {(Array.isArray(students) ? students : []).map(s => (
                     <option key={s.id} value={s.id}>{s.name} ({s.track})</option>
                   ))}
                 </select>

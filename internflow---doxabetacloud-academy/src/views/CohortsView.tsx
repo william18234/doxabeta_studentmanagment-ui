@@ -36,7 +36,7 @@ export const CohortsView: React.FC = () => {
     setError(null);
     try {
       const data = await apiService.getCohorts(authHeader);
-      setCohorts(data);
+      setCohorts(Array.isArray(data) ? data : []);
     } catch (err: any) {
       setError(err);
     } finally {
@@ -54,7 +54,7 @@ export const CohortsView: React.FC = () => {
     setIsLoadingCohortStudents(true);
     try {
       const students = await apiService.getCohortStudents(authHeader, c.id);
-      setCohortStudents(students);
+      setCohortStudents(Array.isArray(students) ? students : []);
     } catch (err: any) {
       setError(err);
     } finally {
@@ -66,9 +66,15 @@ export const CohortsView: React.FC = () => {
     e.preventDefault();
     if (!authHeader) return;
     try {
-      await apiService.createCohort(authHeader, formData);
+      const payload = {
+        name: formData.name || '',
+        description: formData.description || formData.code || '',
+        startDate: formData.startDate || new Date().toISOString().split('T')[0],
+        endDate: formData.endDate || '2026-12-31'
+      };
+      await apiService.createCohort(authHeader, payload);
       setIsAddModalOpen(false);
-      setFormData({ name: '', code: '', startDate: new Date().toISOString().split('T')[0], endDate: '2026-12-31', track: 'Cloud & DevOps', maxCapacity: 25 });
+      setFormData({ name: '', code: '', description: '', startDate: new Date().toISOString().split('T')[0], endDate: '2026-12-31', track: 'Cloud & DevOps', maxCapacity: 25 });
       fetchCohorts();
     } catch (err: any) {
       setError(err);
@@ -84,7 +90,7 @@ export const CohortsView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Cohort Management</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Academy Cohorts & Class Rosters (secure cohort resource)
+            Academy Cohorts & Class Rosters (`GET /api/cohorts`)
           </p>
         </div>
 
@@ -122,7 +128,7 @@ export const CohortsView: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading ? (
           <div className="col-span-full text-center py-12 text-slate-400 text-xs">Loading cohorts...</div>
-        ) : cohorts.length === 0 ? (
+        ) : !Array.isArray(cohorts) || cohorts.length === 0 ? (
           <div className="col-span-full text-center py-12 text-slate-400 text-xs">No cohorts available.</div>
         ) : (
           cohorts.map(c => (
@@ -170,7 +176,7 @@ export const CohortsView: React.FC = () => {
                 className="w-full mt-2 py-1.5 bg-slate-100 hover:bg-purple-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-purple-600 dark:text-purple-300 font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span>View Students (secure cohort roster)</span>
+                <span>View Students (`GET /api/cohorts/{c.id}/students`)</span>
               </button>
             </div>
           ))
@@ -182,7 +188,7 @@ export const CohortsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Create Cohort (secure cohort create action)</h3>
+              <h3 className="font-bold text-sm">Create Cohort (POST /api/cohorts)</h3>
               <button onClick={() => setIsAddModalOpen(false)} className="p-1 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
@@ -283,7 +289,7 @@ export const CohortsView: React.FC = () => {
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {isLoadingCohortStudents ? (
                 <p className="text-xs text-slate-400 text-center py-4">Loading cohort roster...</p>
-              ) : cohortStudents.length === 0 ? (
+              ) : !Array.isArray(cohortStudents) || cohortStudents.length === 0 ? (
                 <p className="text-xs text-slate-400 text-center py-4">No students currently enrolled in this cohort.</p>
               ) : (
                 cohortStudents.map(s => (

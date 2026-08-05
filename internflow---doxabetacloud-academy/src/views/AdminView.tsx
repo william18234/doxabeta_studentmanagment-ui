@@ -94,13 +94,13 @@ export const AdminView: React.FC = () => {
           <div>
             <h2 className="text-lg font-bold text-rose-900 dark:text-rose-200">403 Access Forbidden</h2>
             <p className="text-xs text-rose-700 dark:text-rose-300 mt-0.5">
-              Admin privileges are required to access secure admin resources.
+              Admin priviliges are required to access `/api/admin/**`
             </p>
           </div>
         </div>
         <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
           You are currently logged in as <strong>{user?.name}</strong> with role <strong>{user?.role}</strong>.
-          The backend security model strictly restricts access to secure admin resources to users with role `ADMIN`.
+          The backend security model strictly restricts access to administrative endpoints (`/api/admin/overview`, `/api/admin/raw-json`, `/api/admin/seed`) to users with role `ADMIN`.
         </p>
         <div className="p-3 bg-white/80 dark:bg-slate-900/80 rounded-xl border border-rose-200 dark:border-rose-800 text-xs">
           <p className="font-semibold text-slate-800 dark:text-slate-200">Want to test Admin view?</p>
@@ -128,7 +128,7 @@ export const AdminView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Admin Control Dashboard</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            System metrics, database seed & raw JSON inspect (secure admin resource)
+            System metrics, database seed & raw JSON inspect (`/api/admin/**`)
           </p>
         </div>
 
@@ -136,7 +136,7 @@ export const AdminView: React.FC = () => {
           <button
             onClick={handleSeedDatabase}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer"
-            title="POST secure admin seed action"
+            title="POST /api/admin/seed - Reset database to baseline"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Seed Baseline Data (`POST /seed`)</span>
@@ -154,7 +154,7 @@ export const AdminView: React.FC = () => {
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          Overview Statistics (secure admin overview)
+          Overview Statistics (`GET /api/admin/overview`)
         </button>
 
         <button
@@ -165,7 +165,7 @@ export const AdminView: React.FC = () => {
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          Raw Database JSON (secure admin raw data)
+          Raw Database JSON (`GET /api/admin/raw-json`)
         </button>
       </div>
 
@@ -219,17 +219,21 @@ export const AdminView: React.FC = () => {
               <div className="p-5 bg-white dark:bg-slate-900 border rounded-2xl shadow-xs space-y-4">
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white">Recent System Activity Stream</h3>
                 <div className="space-y-3 divide-y divide-slate-100 dark:divide-slate-800">
-                  {overview.recentActivities.map(act => (
-                    <div key={act.id} className="pt-3 first:pt-0 flex items-start justify-between text-xs">
-                      <div>
-                        <p className="font-semibold text-slate-800 dark:text-slate-200">{act.description}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">Actor: {act.actor}</p>
+                  {Array.isArray(overview?.recentActivities) && overview.recentActivities.length > 0 ? (
+                    overview.recentActivities.map(act => (
+                      <div key={act.id} className="pt-3 first:pt-0 flex items-start justify-between text-xs">
+                        <div>
+                          <p className="font-semibold text-slate-800 dark:text-slate-200">{act.description}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">Actor: {act.actor}</p>
+                        </div>
+                        <span className="font-mono text-[10px] text-slate-400 shrink-0">
+                          {act.timestamp ? new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                        </span>
                       </div>
-                      <span className="font-mono text-[10px] text-slate-400 shrink-0">
-                        {new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-xs text-slate-400 py-2">No recent system activity logged.</p>
+                  )}
                 </div>
               </div>
             </>
@@ -242,7 +246,7 @@ export const AdminView: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-              Response from secure admin raw data request
+              Response from GET `/api/admin/raw-json`
             </span>
 
             <div className="flex items-center gap-2">

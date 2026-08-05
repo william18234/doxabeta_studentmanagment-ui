@@ -72,9 +72,9 @@ export const StudentsView: React.FC = () => {
         apiService.getMentors(authHeader),
         apiService.getCohorts(authHeader)
       ]);
-      setStudents(studentsData);
-      setMentors(mentorsData);
-      setCohorts(cohortsData);
+      setStudents(Array.isArray(studentsData) ? studentsData : []);
+      setMentors(Array.isArray(mentorsData) ? mentorsData : []);
+      setCohorts(Array.isArray(cohortsData) ? cohortsData : []);
     } catch (err: any) {
       setError(err);
     } finally {
@@ -90,7 +90,17 @@ export const StudentsView: React.FC = () => {
     e.preventDefault();
     if (!authHeader) return;
     try {
-      await apiService.createStudent(authHeader, formData);
+      const payload = {
+        name: formData.name || '',
+        email: formData.email || '',
+        phone: formData.phone || '',
+        mentorId: formData.mentorId ? Number(formData.mentorId) : 0,
+        cohortId: formData.cohortId ? Number(formData.cohortId) : 0,
+        track: formData.track || 'Cloud & DevOps',
+        status: formData.status || 'Active',
+        bio: formData.bio || ''
+      };
+      await apiService.createStudent(authHeader, payload);
       setIsAddModalOpen(false);
       setFormData({ name: '', email: '', phone: '', mentorId: '', cohortId: '', track: 'Cloud & DevOps', status: 'Active', bio: '' });
       fetchInitialData();
@@ -160,7 +170,7 @@ export const StudentsView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Student Management</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            DoxabetaCloud Academy Interns (secure student resource)
+            DoxabetaCloud Academy Interns (`GET /api/students`)
           </p>
         </div>
 
@@ -228,7 +238,7 @@ export const StudentsView: React.FC = () => {
             className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100"
           >
             <option value="">All Mentors</option>
-            {mentors.map(m => (
+            {(Array.isArray(mentors) ? mentors : []).map(m => (
               <option key={m.id} value={m.id}>
                 {m.name} ({m.department})
               </option>
@@ -242,7 +252,7 @@ export const StudentsView: React.FC = () => {
             className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100"
           >
             <option value="">All Cohorts</option>
-            {cohorts.map(c => (
+            {(Array.isArray(cohorts) ? cohorts : []).map(c => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
@@ -285,7 +295,7 @@ export const StudentsView: React.FC = () => {
                     Loading student records...
                   </td>
                 </tr>
-              ) : students.length === 0 ? (
+              ) : !Array.isArray(students) || students.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
                     No students match the selected filter criteria.
@@ -390,7 +400,7 @@ export const StudentsView: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                {isAddModalOpen ? 'Create New Student (secure student create action)' : 'Update Student (secure student update action)'}
+                {isAddModalOpen ? 'Create New Student (POST /api/students)' : 'Update Student (PUT /api/students/{id})'}
               </h3>
               <button
                 onClick={() => {
@@ -461,7 +471,7 @@ export const StudentsView: React.FC = () => {
                     className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded-lg"
                   >
                     <option value="">None</option>
-                    {mentors.map(m => (
+                    {(Array.isArray(mentors) ? mentors : []).map(m => (
                       <option key={m.id} value={m.id}>{m.name}</option>
                     ))}
                   </select>
@@ -475,7 +485,7 @@ export const StudentsView: React.FC = () => {
                     className="w-full p-2 bg-slate-50 dark:bg-slate-800 border rounded-lg"
                   >
                     <option value="">None</option>
-                    {cohorts.map(c => (
+                    {(Array.isArray(cohorts) ? cohorts : []).map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
@@ -520,7 +530,7 @@ export const StudentsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4">
             <h3 className="font-bold text-sm">Assign Mentor to {editingStudent.name}</h3>
-            <p className="text-xs text-slate-500">Secure mentor assignment action</p>
+            <p className="text-xs text-slate-500">PUT /api/students/{editingStudent.id}/mentor/{assignMentorId || '{mentorId}'}</p>
 
             <form onSubmit={handleAssignMentorSubmit} className="space-y-3 text-xs">
               <select
@@ -530,7 +540,7 @@ export const StudentsView: React.FC = () => {
                 className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
               >
                 <option value="">Select Mentor</option>
-                {mentors.map(m => (
+                {(Array.isArray(mentors) ? mentors : []).map(m => (
                   <option key={m.id} value={m.id}>{m.name} ({m.title})</option>
                 ))}
               </select>

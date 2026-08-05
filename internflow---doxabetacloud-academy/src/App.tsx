@@ -16,6 +16,7 @@ import { AdminView } from './views/AdminView';
 const MainDashboardContent: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('students');
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
   // Intelligent role-based redirect after authentication
   useEffect(() => {
@@ -35,13 +36,21 @@ const MainDashboardContent: React.FC = () => {
   }
 
   return (
-    <div className="h-screen w-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 flex overflow-hidden font-sans antialiased">
+    <div className="h-screen w-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 flex overflow-hidden font-sans antialiased relative">
       {/* High Density Left Dark Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
-        <Header activeTab={activeTab} />
+        <Header
+          activeTab={activeTab}
+          onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+        />
 
         <main className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto min-h-0 bg-slate-50/60 dark:bg-slate-950/60">
           {activeTab === 'students' && <StudentsView />}

@@ -14,9 +14,9 @@ export interface Student {
   name: string;
   email: string;
   phone?: string;
-  mentorId?: string;
+  mentorId?: string | number;
   mentorName?: string;
-  cohortId?: string;
+  cohortId?: string | number;
   cohortName?: string;
   status: 'Active' | 'Graduated' | 'On Leave' | 'Inactive';
   track: string;

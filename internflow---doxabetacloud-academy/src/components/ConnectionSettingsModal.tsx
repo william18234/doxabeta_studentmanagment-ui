@@ -8,25 +8,6 @@ interface ConnectionSettingsModalProps {
   onClose: () => void;
 }
 
-const redactBasicAuthHeader = (header: string | null) => {
-  if (!header) return 'None';
-  const [scheme, encoded] = header.split(' ');
-  if (!encoded) return 'Basic ***';
-  return `${scheme} ${encoded.slice(0, 4)}***`;
-};
-
-const redactUserValue = (value?: string) => {
-  if (!value) return 'Anonymous';
-  return `${value.charAt(0)}***${value.slice(-1)}`;
-};
-
-const makeRandomAlias = (value?: string) => {
-  const seeds = ['Aster', 'Blue', 'Nova', 'Iris', 'Rune', 'Sage', 'Luna'];
-  const normalized = value?.toLowerCase() || 'guest';
-  const seedIndex = Math.abs(normalized.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % seeds.length;
-  return `${seeds[seedIndex]}-${Math.floor(100 + Math.random() * 900)}`;
-};
-
 export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = ({ isOpen, onClose }) => {
   const { user, authHeader, connectionMode, setConnectionMode } = useAuth();
   const [testResult, setTestResult] = useState<{ status: 'idle' | 'testing' | 'success' | 'error'; message?: string }>({ status: 'idle' });
@@ -79,7 +60,25 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-2">
               Backend Routing Mode
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button
+                type="button"
+                onClick={() => setConnectionMode('PRODUCTION')}
+                className={`p-3 text-left border rounded-xl flex flex-col gap-1 transition-all ${
+                  connectionMode === 'PRODUCTION'
+                    ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-900 dark:text-indigo-200 font-medium ring-2 ring-indigo-500/20'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 bg-white dark:bg-slate-800'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-xs">Live Backend</span>
+                  <Globe className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <span className="text-[10px] opacity-80 leading-relaxed">
+                  `onrender.com/api` (Live Production API)
+                </span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setConnectionMode('PROXY')}
@@ -90,29 +89,11 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xs">Express Fullstack Proxy</span>
-                  <Database className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <span className="font-semibold text-xs">Express Proxy</span>
+                  <Database className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <span className="text-[11px] opacity-80 leading-relaxed">
-                  `/api` endpoint (local proxy / mock fallback)
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setConnectionMode('DIRECT_RENDER')}
-                className={`p-3 text-left border rounded-xl flex flex-col gap-1 transition-all ${
-                  connectionMode === 'DIRECT_RENDER'
-                    ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-900 dark:text-indigo-200 font-medium ring-2 ring-indigo-500/20'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 bg-white dark:bg-slate-800'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xs">Deployed Render Backend</span>
-                  <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <span className="text-[11px] opacity-80 leading-relaxed">
-                  `https://doxabeta-student-management-1.onrender.com/api`
+                <span className="text-[10px] opacity-80 leading-relaxed">
+                  `/api` (Proxies backend or mock fallback)
                 </span>
               </button>
 
@@ -126,11 +107,11 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xs">Direct Port 8080</span>
-                  <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="font-semibold text-xs">Port 8080</span>
+                  <Server className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 </div>
-                <span className="text-[11px] opacity-80 leading-relaxed">
-                  `http://localhost:8080/api` (local dev only)
+                <span className="text-[10px] opacity-80 leading-relaxed">
+                  `localhost:8080/api` (Local dev server)
                 </span>
               </button>
             </div>
@@ -139,12 +120,12 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
           {/* Current Configuration Summary */}
           <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-medium text-slate-500 dark:text-slate-400">Current Base Route:</span>
-              <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">Protected internal route</span>
+              <span className="font-medium text-slate-500 dark:text-slate-400">Current Base URL:</span>
+              <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">{getBaseUrl()}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="font-medium text-slate-500 dark:text-slate-400">Authenticated User:</span>
-              <span className="font-medium text-slate-900 dark:text-white">{makeRandomAlias(user?.username)} ({makeRandomAlias(user?.name)})</span>
+              <span className="font-medium text-slate-900 dark:text-white">{user?.name} ({user?.username})</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="font-medium text-slate-500 dark:text-slate-400">Active Role:</span>
@@ -158,10 +139,10 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
           <div>
             <div className="flex items-center gap-1.5 mb-1.5 text-slate-700 dark:text-slate-300 font-semibold">
               <Key className="w-3.5 h-3.5 text-amber-500" />
-              <span>Authorization Header Preview</span>
+              <span>Authorization Header (HTTP Basic Auth)</span>
             </div>
             <div className="p-2.5 font-mono text-[11px] bg-slate-900 text-slate-200 rounded-lg overflow-x-auto break-all">
-              {redactBasicAuthHeader(authHeader)}
+              {authHeader || 'None'}
             </div>
           </div>
 
@@ -175,7 +156,7 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
                 className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg text-xs transition-all shadow-xs cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${testResult.status === 'testing' ? 'animate-spin' : ''}`} />
-                <span>Test Backend Health</span>
+                <span>Test Backend Health (`/api/health`)</span>
               </button>
 
               {testResult.status === 'success' && (

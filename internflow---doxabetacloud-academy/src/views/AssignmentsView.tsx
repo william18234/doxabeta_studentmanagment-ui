@@ -43,8 +43,8 @@ export const AssignmentsView: React.FC = () => {
         apiService.getAssignments(authHeader, selectedStudentId || undefined),
         apiService.getStudents(authHeader)
       ]);
-      setAssignments(assignmentsData);
-      setStudents(studentsData);
+      setAssignments(Array.isArray(assignmentsData) ? assignmentsData : []);
+      setStudents(Array.isArray(studentsData) ? studentsData : []);
     } catch (err: any) {
       setError(err);
     } finally {
@@ -89,7 +89,7 @@ export const AssignmentsView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Assignment Submissions</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Submit projects, code repositories & mentor grading (secure assignment resource)
+            Submit projects, code repositories & mentor grading (`POST /api/assignments`, `PUT /api/assignments/:id/grade`)
           </p>
         </div>
 
@@ -132,7 +132,7 @@ export const AssignmentsView: React.FC = () => {
             className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border rounded-lg"
           >
             <option value="">All Student Submissions</option>
-            {students.map(s => (
+            {(Array.isArray(students) ? students : []).map(s => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
@@ -158,7 +158,7 @@ export const AssignmentsView: React.FC = () => {
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-slate-400">Loading assignments...</td>
                 </tr>
-              ) : assignments.length === 0 ? (
+              ) : !Array.isArray(assignments) || assignments.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-slate-400">No project assignments submitted yet.</td>
                 </tr>
@@ -234,7 +234,7 @@ export const AssignmentsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Submit Assignment (secure assignment create action)</h3>
+              <h3 className="font-bold text-sm">Submit Assignment (POST /api/assignments)</h3>
               <button onClick={() => setIsSubmitModalOpen(false)} className="p-1 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
@@ -288,7 +288,7 @@ export const AssignmentsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Grade Submission (secure grading action)</h3>
+              <h3 className="font-bold text-sm">Grade Submission (`PUT /api/assignments/{gradingAssignment.id}/grade`)</h3>
               <button onClick={() => setGradingAssignment(null)} className="p-1 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
