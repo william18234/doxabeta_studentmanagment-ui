@@ -1,5 +1,5 @@
 {
-  "name": "InternFlow - DoxabetaCloud Academy",
+  "name": "InternFlow",
   "description": "Role-based student management dashboard for DoxabetaCloud Academy with HTTP Basic Auth, student tracking, assignments, reviews, and CSV exports.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
