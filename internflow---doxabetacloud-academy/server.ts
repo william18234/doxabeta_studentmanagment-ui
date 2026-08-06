@@ -350,7 +350,17 @@ app.put('/api/students/:id/cohort/:cohortId', (req, res) => {
 // GET /api/mentors
 app.get('/api/mentors', (req, res) => {
   mockDb.updateCounts();
-  res.json(mockDb.mentors);
+  let list = [...mockDb.mentors];
+  if (req.query.search) {
+    const q = String(req.query.search).toLowerCase();
+    list = list.filter(m =>
+      m.name.toLowerCase().includes(q) ||
+      m.email.toLowerCase().includes(q) ||
+      m.department.toLowerCase().includes(q) ||
+      (m.title && m.title.toLowerCase().includes(q))
+    );
+  }
+  res.json(list);
 });
 
 // GET /api/mentors/:id
@@ -407,7 +417,16 @@ app.get('/api/mentors/:id/students', (req, res) => {
 // GET /api/cohorts
 app.get('/api/cohorts', (req, res) => {
   mockDb.updateCounts();
-  res.json(mockDb.cohorts);
+  let list = [...mockDb.cohorts];
+  if (req.query.search) {
+    const q = String(req.query.search).toLowerCase();
+    list = list.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.code.toLowerCase().includes(q) ||
+      (c.track && c.track.toLowerCase().includes(q))
+    );
+  }
+  res.json(list);
 });
 
 // POST /api/cohorts

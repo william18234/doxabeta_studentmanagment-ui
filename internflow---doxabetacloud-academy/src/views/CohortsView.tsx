@@ -109,22 +109,24 @@ export const CohortsView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <CSVExportButton
-            data={cohorts}
-            filename="doxabeta-cohorts"
-            title="Export Cohorts CSV"
-            columnMapping={{
-              id: 'Cohort ID',
-              name: 'Cohort Name',
-              code: 'Code',
-              track: 'Track',
-              startDate: 'Start Date',
-              endDate: 'End Date',
-              maxCapacity: 'Max Capacity',
-              studentCount: 'Enrolled Count',
-              status: 'Status'
-            }}
-          />
+          {user?.role !== 'STUDENT' && (
+            <CSVExportButton
+              data={cohorts}
+              filename="doxabeta-cohorts"
+              title="Export Cohorts CSV"
+              columnMapping={{
+                id: 'Cohort ID',
+                name: 'Cohort Name',
+                code: 'Code',
+                track: 'Track',
+                startDate: 'Start Date',
+                endDate: 'End Date',
+                maxCapacity: 'Max Capacity',
+                studentCount: 'Enrolled Count',
+                status: 'Status'
+              }}
+            />
+          )}
 
           {isStaff && (
             <div className="flex items-center gap-2">

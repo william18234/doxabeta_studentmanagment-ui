@@ -123,21 +123,23 @@ export const MentorsView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <CSVExportButton
-            data={filteredMentors}
-            filename="doxabeta-mentors"
-            title="Export Mentors CSV"
-            columnMapping={{
-              id: 'Mentor ID',
-              name: 'Full Name',
-              email: 'Email',
-              phone: 'Phone',
-              title: 'Title',
-              department: 'Department',
-              maxMentees: 'Max Capacity',
-              activeMenteesCount: 'Active Mentees'
-            }}
-          />
+          {user?.role !== 'STUDENT' && (
+            <CSVExportButton
+              data={filteredMentors}
+              filename="doxabeta-mentors"
+              title="Export Mentors CSV"
+              columnMapping={{
+                id: 'Mentor ID',
+                name: 'Full Name',
+                email: 'Email',
+                phone: 'Phone',
+                title: 'Title',
+                department: 'Department',
+                maxMentees: 'Max Capacity',
+                activeMenteesCount: 'Active Mentees'
+              }}
+            />
+          )}
 
           {isAdmin ? (
             <div className="flex items-center gap-2">
@@ -177,10 +179,27 @@ export const MentorsView: React.FC = () => {
             placeholder="Search mentor name, email, department..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border rounded-lg"
+            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100"
           />
         </div>
       </div>
+
+      {search.trim() && (
+        <div className="p-3 bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900 rounded-xl flex items-center justify-between text-xs text-indigo-900 dark:text-indigo-200 shadow-xs">
+          <div className="flex items-center gap-2">
+            <Search className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+            <span>
+              Search active for <strong>"{search.trim()}"</strong>: Showing <strong>{filteredMentors.length}</strong> matching mentor record{filteredMentors.length === 1 ? '' : 's'}. All other mentors are hidden from view.
+            </span>
+          </div>
+          <button
+            onClick={() => setSearch('')}
+            className="px-2.5 py-1 text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md transition-all shrink-0 cursor-pointer"
+          >
+            Clear Search
+          </button>
+        </div>
+      )}
 
       {/* Mentors Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

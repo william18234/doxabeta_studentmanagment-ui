@@ -103,7 +103,12 @@ async function request<T>(
       throw new ApiError(errData.error, response.status, errData.details);
     }
 
-    return await response.json();
+    if (response.status === 204) {
+      return {} as T;
+    }
+
+    const text = await response.text();
+    return text ? JSON.parse(text) : ({} as T);
   } catch (error: any) {
     if (error instanceof ApiError) {
       throw error;

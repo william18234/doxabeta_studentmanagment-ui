@@ -26,6 +26,7 @@ export const StudentsView: React.FC = () => {
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<ApiError | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Filters
   const [search, setSearch] = useState('');
@@ -168,6 +169,8 @@ export const StudentsView: React.FC = () => {
       await apiService.deleteStudent(authHeader, id);
       setIsDeleteModalOpen(false);
       setDeleteStudentId('');
+      setSuccessMsg('Student deleted successfully.');
+      setTimeout(() => setSuccessMsg(null), 5000);
       fetchInitialData();
     } catch (err: any) {
       setError(err);
@@ -190,9 +193,49 @@ export const StudentsView: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
+  const safeStudents = Array.isArray(students) ? students : [];
+  const filteredStudents = safeStudents.filter(s => {
+    if (selectedMentorId && String(s.mentorId) !== String(selectedMentorId)) return false;
+    if (selectedCohortId && String(s.cohortId) !== String(selectedCohortId) && s.cohortName !== String(selectedCohortId)) return false;
+    if (selectedStatus && (s.status || '').toLowerCase() !== selectedStatus.toLowerCase()) return false;
+
+    if (!search.trim()) return true;
+    const q = search.toLowerCase().trim();
+    const name = (s.name || '').toLowerCase();
+    const email = (s.email || '').toLowerCase();
+    const phone = (s.phone || '').toLowerCase();
+    const code = ((s as any).code || '').toLowerCase();
+    const mentorName = (s.mentorName || '').toLowerCase();
+    const cohortName = (s.cohortName || '').toLowerCase();
+    const track = (s.track || '').toLowerCase();
+    const status = (s.status || '').toLowerCase();
+    const bio = (s.bio || '').toLowerCase();
+    const id = String(s.id || '').toLowerCase();
+
+    return (
+      name.includes(q) ||
+      email.includes(q) ||
+      phone.includes(q) ||
+      code.includes(q) ||
+      mentorName.includes(q) ||
+      cohortName.includes(q) ||
+      track.includes(q) ||
+      status.includes(q) ||
+      bio.includes(q) ||
+      id.includes(q)
+    );
+  });
+
   return (
     <div className="space-y-6">
       <ErrorBanner error={error} onDismiss={() => setError(null)} onRetry={fetchInitialData} />
+
+      {successMsg && (
+        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-semibold text-emerald-800 dark:text-emerald-200 flex items-center justify-between shadow-xs">
+          <span>{successMsg}</span>
+          <button onClick={() => setSuccessMsg(null)} className="text-emerald-500 hover:text-emerald-700 font-bold text-sm px-1">✕</button>
+        </div>
+      )}
 
       {/* Header & Actions Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -204,22 +247,24 @@ export const StudentsView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <CSVExportButton
-            data={students}
-            filename="doxabeta-students"
-            title="Export Students CSV"
-            columnMapping={{
-              id: 'Student ID',
-              name: 'Full Name',
-              email: 'Email Address',
-              phone: 'Phone',
-              mentorName: 'Assigned Mentor',
-              cohortName: 'Cohort Name',
-              status: 'Status',
-              track: 'Learning Track',
-              startDate: 'Start Date'
-            }}
-          />
+          {user?.role !== 'STUDENT' && (
+            <CSVExportButton
+              data={filteredStudents}
+              filename="doxabeta-students"
+              title="Export Students CSV"
+              columnMapping={{
+                id: 'Student ID',
+                name: 'Full Name',
+                email: 'Email Address',
+                phone: 'Phone',
+                mentorName: 'Assigned Mentor',
+                cohortName: 'Cohort Name',
+                status: 'Status',
+                track: 'Learning Track',
+                startDate: 'Start Date'
+              }}
+            />
+          )}
 
           {isStaff ? (
             <div className="flex items-center gap-2">
@@ -252,7 +297,7 @@ export const StudentsView: React.FC = () => {
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-all cursor-pointer"
               >
                 <Trash2 className="w-4 h-4" />
-                <span>Remove Student</span>
+                <span>Delete Student</span>
               </button>
             </div>
           ) : (
@@ -326,6 +371,23 @@ export const StudentsView: React.FC = () => {
         </div>
       </div>
 
+      {search.trim() && (
+        <div className="p-3 bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900 rounded-xl flex items-center justify-between text-xs text-indigo-900 dark:text-indigo-200 shadow-xs">
+          <div className="flex items-center gap-2">
+            <Search className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+            <span>
+              Search active for <strong>"{search.trim()}"</strong>: Showing <strong>{filteredStudents.length}</strong> matching student record{filteredStudents.length === 1 ? '' : 's'}. All other students are hidden from view.
+            </span>
+          </div>
+          <button
+            onClick={() => setSearch('')}
+            className="px-2.5 py-1 text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md transition-all shrink-0 cursor-pointer"
+          >
+            Clear Search
+          </button>
+        </div>
+      )}
+
       {/* Student Table */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
@@ -347,14 +409,27 @@ export const StudentsView: React.FC = () => {
                     Loading student records...
                   </td>
                 </tr>
-              ) : !Array.isArray(students) || students.length === 0 ? (
+              ) : filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
-                    No students match the selected filter criteria.
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400 font-medium">
+                    {search.trim() ? (
+                      <div className="py-4 space-y-1">
+                        <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No student found matching "{search.trim()}"</p>
+                        <p className="text-xs text-slate-400">All other student records are hidden from view.</p>
+                        <button
+                          onClick={() => setSearch('')}
+                          className="mt-2 px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300 font-semibold text-xs rounded-md transition-colors"
+                        >
+                          Clear Search
+                        </button>
+                      </div>
+                    ) : (
+                      "No students match the selected filter criteria."
+                    )}
                   </td>
                 </tr>
               ) : (
-                students.map(s => (
+                filteredStudents.map(s => (
                   <tr key={s.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-4 py-3 font-medium">
                       <div>
@@ -684,22 +759,22 @@ export const StudentsView: React.FC = () => {
         </div>
       )}
 
-      {/* REMOVE STUDENT MODAL */}
+      {/* DELETE STUDENT MODAL */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Trash2 className="w-4 h-4 text-rose-600" />
-                <span>Remove Student</span>
+                <span>Delete Student</span>
               </h3>
               <button onClick={() => setIsDeleteModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Select a student to permanently remove from DoxabetaCloud Academy database.
+            <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
+              Are you sure you want to delete this student? This action cannot be undone.
             </p>
 
             <div className="space-y-3">
