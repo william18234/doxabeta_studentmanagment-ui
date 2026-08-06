@@ -279,6 +279,17 @@ app.put('/api/students/:id', (req, res) => {
   res.json(updated);
 });
 
+// DELETE /api/students/:id
+app.delete('/api/students/:id', (req, res) => {
+  const index = mockDb.students.findIndex(s => String(s.id) === String(req.params.id));
+  if (index === -1) {
+    return res.status(404).json({ error: '404 Not Found: Student not found' });
+  }
+  mockDb.students.splice(index, 1);
+  mockDb.updateCounts();
+  res.json({ message: 'Student deleted successfully' });
+});
+
 // PUT /api/students/:id/mentor/:mentorId
 app.put('/api/students/:id/mentor/:mentorId', (req, res) => {
   const student = mockDb.students.find(s => s.id === req.params.id);
@@ -374,6 +385,17 @@ app.post('/api/mentors', (req, res) => {
   res.status(201).json(newMentor);
 });
 
+// DELETE /api/mentors/:id
+app.delete('/api/mentors/:id', (req, res) => {
+  const index = mockDb.mentors.findIndex(m => String(m.id) === String(req.params.id));
+  if (index === -1) {
+    return res.status(404).json({ error: '404 Not Found: Mentor not found' });
+  }
+  mockDb.mentors.splice(index, 1);
+  mockDb.updateCounts();
+  res.json({ message: 'Mentor deleted successfully' });
+});
+
 // GET /api/mentors/:id/students
 app.get('/api/mentors/:id/students', (req, res) => {
   const students = mockDb.students.filter(s => s.mentorId === req.params.id);
@@ -409,6 +431,17 @@ app.post('/api/cohorts', (req, res) => {
 
   mockDb.cohorts.push(newCohort);
   res.status(201).json(newCohort);
+});
+
+// DELETE /api/cohorts/:id
+app.delete('/api/cohorts/:id', (req, res) => {
+  const index = mockDb.cohorts.findIndex(c => String(c.id) === String(req.params.id));
+  if (index === -1) {
+    return res.status(404).json({ error: '404 Not Found: Cohort not found' });
+  }
+  mockDb.cohorts.splice(index, 1);
+  mockDb.updateCounts();
+  res.json({ message: 'Cohort deleted successfully' });
 });
 
 // GET /api/cohorts/:id/students
@@ -532,6 +565,16 @@ app.post('/api/assignments', (req: AuthenticatedRequest, res) => {
 
   mockDb.assignments.unshift(newAssignment);
   res.status(201).json(newAssignment);
+});
+
+// DELETE /api/assignments/:id
+app.delete('/api/assignments/:id', (req, res) => {
+  const index = mockDb.assignments.findIndex(a => String(a.id) === String(req.params.id));
+  if (index === -1) {
+    return res.status(404).json({ error: '404 Not Found: Assignment not found' });
+  }
+  mockDb.assignments.splice(index, 1);
+  res.json({ message: 'Assignment deleted successfully' });
 });
 
 // PUT /api/assignments/:id/grade

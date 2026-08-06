@@ -50,3 +50,24 @@ Show a user-friendly error message instead.
 - description: string
 - startDate: string (YYYY-MM-DD)
 - endDate: string (YYYY-MM-DD)
+
+### Daily Hours DTO
+- studentId: number (required, must reference an existing student)
+- date: string (YYYY-MM-DD, required)
+- timeIn: string (HH:mm, required)
+- timeOut: string (HH:mm, required, must be after timeIn)
+- notes: string (optional)
+
+### Assignment DTO (POST /api/assignments)
+- studentId: number (required, must reference an existing student)
+- title: string (required, cannot be blank)
+- description: string (optional)
+
+### Review DTO (POST /api/reviews)
+- studentId: number (required, must reference an existing student)
+- mentorId: number (required, must reference an existing mentor)
+- reviewDate: string (YYYY-MM-DD, required)
+- score: number (1-5, optional)
+- learningOutcomes: string (optional)
+- notes: string (optional)
+- nextSteps: string (optional)

@@ -52,44 +52,55 @@ export interface Cohort {
 
 export interface DailyHour {
   id: string;
-  studentId: string;
+  studentId: number | string;
   studentName?: string;
   date: string;
-  hoursLogged: number;
-  project: string;
-  category: string;
-  description: string;
-  status: 'Submitted' | 'Approved' | 'Flagged';
+  timeIn?: string;
+  timeOut?: string;
+  hoursLogged?: number;
+  project?: string;
+  category?: string;
+  description?: string;
+  notes?: string;
+  status?: string;
 }
 
 export interface Review {
   id: string;
-  studentId: string;
+  studentId: number | string;
   studentName?: string;
-  reviewerId: string;
+  mentorId?: number | string;
+  reviewerId?: string;
   reviewerName?: string;
   reviewDate: string;
-  rating: number; // 1-5
-  technicalSkills: number; // 1-5
-  communication: number; // 1-5
-  initiative: number; // 1-5
-  feedback: string;
-  recommendations: string;
+  score?: number;
+  rating?: number; // 1-5 fallback
+  technicalSkills?: number; // 1-5
+  communication?: number; // 1-5
+  initiative?: number; // 1-5
+  learningOutcomes?: string;
+  notes?: string;
+  nextSteps?: string;
+  feedback?: string;
+  recommendations?: string;
+  status?: string;
 }
 
 export interface Assignment {
   id: string;
   title: string;
-  studentId: string;
+  studentId: number | string;
   studentName?: string;
-  description: string;
-  repositoryUrl: string;
-  submissionDate: string;
-  dueDate: string;
+  description?: string;
+  submittedAt?: string;
+  submissionDate?: string;
+  grade?: number;
   score?: number;
-  maxScore: number;
-  status: 'Submitted' | 'Graded' | 'Pending Review';
+  status?: 'SUBMITTED' | 'GRADED' | 'Submitted' | 'Graded' | 'Pending Review' | string;
   feedback?: string;
+  repositoryUrl?: string;
+  dueDate?: string;
+  maxScore?: number;
   gradedBy?: string;
 }
 

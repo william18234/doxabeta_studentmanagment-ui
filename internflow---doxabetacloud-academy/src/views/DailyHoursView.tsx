@@ -20,12 +20,11 @@ export const DailyHoursView: React.FC = () => {
   // Log Hours Modal
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    studentId: user?.studentId || 's1',
+    studentId: '',
     date: new Date().toISOString().split('T')[0],
-    hoursLogged: 8.0,
-    project: 'InternFlow Dashboard API',
-    category: 'Backend & REST API',
-    description: ''
+    timeIn: '08:30',
+    timeOut: '16:45',
+    notes: ''
   });
 
   const isStudentRole = user?.role === 'STUDENT';
@@ -39,8 +38,13 @@ export const DailyHoursView: React.FC = () => {
         apiService.getDailyHours(authHeader, selectedStudentId || undefined),
         apiService.getStudents(authHeader)
       ]);
+      const fetchedStudents = Array.isArray(studentsData) ? studentsData : [];
       setDailyHours(Array.isArray(hoursData) ? hoursData : []);
-      setStudents(Array.isArray(studentsData) ? studentsData : []);
+      setStudents(fetchedStudents);
+
+      if (fetchedStudents.length > 0 && !formData.studentId) {
+        setFormData(prev => ({ ...prev, studentId: String(fetchedStudents[0].id) }));
+      }
     } catch (err: any) {
       setError(err);
     } finally {
@@ -55,19 +59,37 @@ export const DailyHoursView: React.FC = () => {
   const handleLogHours = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!authHeader) return;
+
+    if (!formData.studentId) {
+      setError(new ApiError('Please select a student.', 400));
+      return;
+    }
+
+    if (formData.timeOut <= formData.timeIn) {
+      setError(new ApiError('Time Out must be later than Time In.', 400));
+      return;
+    }
+
+    const payload: any = {
+      studentId: Number(formData.studentId),
+      date: formData.date,
+      timeIn: formData.timeIn,
+      timeOut: formData.timeOut
+    };
+
+    if (formData.notes && formData.notes.trim() !== '') {
+      payload.notes = formData.notes.trim();
+    }
+
     try {
-      await apiService.logDailyHours(authHeader, {
-        ...formData,
-        studentId: isStudentRole ? (user?.studentId || 's1') : formData.studentId
-      });
+      await apiService.logDailyHours(authHeader, payload);
       setIsLogModalOpen(false);
       setFormData({
-        studentId: user?.studentId || 's1',
+        studentId: students.length > 0 ? String(students[0].id) : '',
         date: new Date().toISOString().split('T')[0],
-        hoursLogged: 8.0,
-        project: 'InternFlow Dashboard API',
-        category: 'Backend & REST API',
-        description: ''
+        timeIn: '08:30',
+        timeOut: '16:45',
+        notes: ''
       });
       fetchData();
     } catch (err: any) {
@@ -75,13 +97,28 @@ export const DailyHoursView: React.FC = () => {
     }
   };
 
+  const calculateHours = (timeIn?: string, timeOut?: string): number => {
+    if (!timeIn || !timeOut) return 0;
+    const [inH, inM] = timeIn.split(':').map(Number);
+    const [outH, outM] = timeOut.split(':').map(Number);
+    if (isNaN(inH) || isNaN(inM) || isNaN(outH) || isNaN(outM)) return 0;
+    const diff = (outH * 60 + outM) - (inH * 60 + inM);
+    return diff > 0 ? diff / 60 : 0;
+  };
+
   const safeHours = Array.isArray(dailyHours) ? dailyHours : [];
   const filteredHours = safeHours.filter(h => {
     if (!selectedCategory) return true;
-    return h.category.toLowerCase().includes(selectedCategory.toLowerCase());
+    const cat = h.category || h.notes || '';
+    return cat.toLowerCase().includes(selectedCategory.toLowerCase());
   });
 
-  const totalHours = filteredHours.reduce((sum, h) => sum + Number(h.hoursLogged), 0);
+  const totalHours = filteredHours.reduce((sum, h) => {
+    const hours = h.hoursLogged !== undefined && h.hoursLogged !== null
+      ? Number(h.hoursLogged)
+      : calculateHours(h.timeIn, h.timeOut);
+    return sum + hours;
+  }, 0);
 
   return (
     <div className="space-y-6">
@@ -92,7 +129,7 @@ export const DailyHoursView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Daily Hours Tracking</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Log work hours, projects & task activities (`GET /api/daily-hours`, `POST /api/daily-hours`)
+            Log work hours, projects & task activities
           </p>
         </div>
 
@@ -166,7 +203,7 @@ export const DailyHoursView: React.FC = () => {
             onChange={e => setSelectedStudentId(e.target.value)}
             className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border rounded-lg"
           >
-            <option value="">All Students (`GET /api/daily-hours`)</option>
+            <option value="">All Students</option>
             {(Array.isArray(students) ? students : []).map(s => (
               <option key={s.id} value={s.id}>
                 {s.name} ({s.track})
@@ -195,10 +232,10 @@ export const DailyHoursView: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 dark:bg-slate-800/60 border-b text-slate-500 font-semibold uppercase tracking-wider">
               <tr>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Student Name</th>
-                <th className="px-4 py-3">Project & Category</th>
-                <th className="px-4 py-3">Description</th>
+                <th className="px-4 py-3">Date (date)</th>
+                <th className="px-4 py-3">Student (studentId)</th>
+                <th className="px-4 py-3">Time In / Out</th>
+                <th className="px-4 py-3">Notes (notes)</th>
                 <th className="px-4 py-3 text-right">Hours</th>
                 <th className="px-4 py-3 text-center">Status</th>
               </tr>
@@ -213,34 +250,36 @@ export const DailyHoursView: React.FC = () => {
                   <td colSpan={6} className="px-4 py-8 text-center text-slate-400">No time logs recorded yet.</td>
                 </tr>
               ) : (
-                filteredHours.map(h => (
-                  <tr key={h.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
-                    <td className="px-4 py-3 font-mono text-slate-500">{h.date}</td>
+                filteredHours.map((h, index) => {
+                  const studentObj = students.find(s => String(s.id) === String(h.studentId));
+                  const displayName = studentObj
+                    ? `${studentObj.name} (ID: ${studentObj.id})`
+                    : (h.studentName ? `${h.studentName} (ID: ${h.studentId})` : `Student ID: ${h.studentId}`);
+                  const hoursVal = h.hoursLogged !== undefined && h.hoursLogged !== null
+                    ? Number(h.hoursLogged)
+                    : calculateHours(h.timeIn, h.timeOut);
 
-                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
-                      {h.studentName || 'Student'}
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-slate-900 dark:text-white">{h.project}</div>
-                      <span className="text-[10px] text-indigo-600 dark:text-indigo-400">{h.category}</span>
-                    </td>
-
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">
-                      {h.description || 'No detailed description provided.'}
-                    </td>
-
-                    <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white">
-                      {Number(h.hoursLogged).toFixed(1)} hrs
-                    </td>
-
-                    <td className="px-4 py-3 text-center">
-                      <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 rounded-full">
-                        {h.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                  return (
+                    <tr key={h.id || index} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+                      <td className="px-4 py-3 font-mono text-slate-500">{h.date}</td>
+                      <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">{displayName}</td>
+                      <td className="px-4 py-3 font-mono text-indigo-600 dark:text-indigo-400">
+                        {h.timeIn && h.timeOut ? `${h.timeIn} - ${h.timeOut}` : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">
+                        {h.notes || h.description || '—'}
+                      </td>
+                      <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white">
+                        {hoursVal.toFixed(1)} hrs
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 rounded-full">
+                          {h.status || 'SUBMITTED'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -252,95 +291,79 @@ export const DailyHoursView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Log Daily Hours (POST /api/daily-hours)</h3>
+              <h3 className="font-bold text-sm">Log Daily Hours</h3>
               <button onClick={() => setIsLogModalOpen(false)} className="p-1 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleLogHours} className="space-y-3 text-xs">
-              {!isStudentRole && (
-                <div>
-                  <label className="block font-semibold mb-1">Select Student</label>
-                  <select
-                    value={formData.studentId}
-                    onChange={e => setFormData({ ...formData, studentId: e.target.value })}
-                    className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
-                  >
-                    {(Array.isArray(students) ? students : []).map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold mb-1">Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.date}
-                    onChange={e => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold mb-1">Hours Worked</label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    min="0.5"
-                    max="24"
-                    required
-                    value={formData.hoursLogged}
-                    onChange={e => setFormData({ ...formData, hoursLogged: Number(e.target.value) })}
-                    className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
-                  />
-                </div>
-              </div>
-
               <div>
-                <label className="block font-semibold mb-1">Project Name</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.project}
-                  onChange={e => setFormData({ ...formData, project: e.target.value })}
-                  className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
-                  placeholder="e.g. InternFlow Dashboard"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-1">Category</label>
+                <label className="block font-semibold mb-1">Student (studentId)</label>
                 <select
-                  value={formData.category}
-                  onChange={e => setFormData({ ...formData, category: e.target.value })}
+                  required
+                  value={formData.studentId}
+                  onChange={e => setFormData({ ...formData, studentId: e.target.value })}
                   className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
                 >
-                  <option value="Backend & REST API">Backend & REST API</option>
-                  <option value="Cloud Infrastructure">Cloud Infrastructure</option>
-                  <option value="Frontend & Analytics">Frontend & Analytics</option>
-                  <option value="AI & Data Engineering">AI & Data Engineering</option>
+                  <option value="">Select Student</option>
+                  {(Array.isArray(students) ? students : []).map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} (ID: {s.id})
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Description / Deliverables</label>
+                <label className="block font-semibold mb-1">Date (date)</label>
+                <input
+                  type="date"
+                  required
+                  value={formData.date}
+                  onChange={e => setFormData({ ...formData, date: e.target.value })}
+                  className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold mb-1">Time In (timeIn)</label>
+                  <input
+                    type="time"
+                    required
+                    value={formData.timeIn}
+                    onChange={e => setFormData({ ...formData, timeIn: e.target.value })}
+                    className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold mb-1">Time Out (timeOut)</label>
+                  <input
+                    type="time"
+                    required
+                    value={formData.timeOut}
+                    onChange={e => setFormData({ ...formData, timeOut: e.target.value })}
+                    className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Notes (notes)</label>
                 <textarea
-                  value={formData.description}
-                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                  value={formData.notes}
+                  onChange={e => setFormData({ ...formData, notes: e.target.value })}
                   rows={3}
                   className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800"
-                  placeholder="Summarize tasks accomplished today..."
+                  placeholder="Optional notes or deliverables..."
                 />
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setIsLogModalOpen(false)} className="px-3 py-1.5 bg-slate-200 rounded-lg">Cancel</button>
-                <button type="submit" className="px-3 py-1.5 bg-indigo-600 text-white font-semibold rounded-lg">Submit Time Log</button>
+                <button type="button" onClick={() => setIsLogModalOpen(false)} className="px-3 py-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg cursor-pointer">Cancel</button>
+                <button type="submit" className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg cursor-pointer">Submit Time Log</button>
               </div>
             </form>
           </div>

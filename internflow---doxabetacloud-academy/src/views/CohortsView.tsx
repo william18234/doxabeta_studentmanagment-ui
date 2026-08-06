@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FolderGit2, Plus, Users, Calendar, Eye, X } from 'lucide-react';
+import { FolderGit2, Plus, Trash2, Users, Calendar, Eye, X } from 'lucide-react';
 import { Cohort, Student } from '../types';
 import { apiService, ApiError } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +19,8 @@ export const CohortsView: React.FC = () => {
 
   // Add Cohort Modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteCohortId, setDeleteCohortId] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     code: '',
@@ -81,6 +83,18 @@ export const CohortsView: React.FC = () => {
     }
   };
 
+  const handleDeleteCohort = async (id: string) => {
+    if (!authHeader || !id) return;
+    try {
+      await apiService.deleteCohort(authHeader, id);
+      setIsDeleteModalOpen(false);
+      setDeleteCohortId('');
+      fetchCohorts();
+    } catch (err: any) {
+      setError(err);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <ErrorBanner error={error} onDismiss={() => setError(null)} onRetry={fetchCohorts} />
@@ -90,7 +104,7 @@ export const CohortsView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Cohort Management</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Academy Cohorts & Class Rosters (`GET /api/cohorts`)
+            Academy Cohorts & Class Rosters
           </p>
         </div>
 
@@ -113,13 +127,26 @@ export const CohortsView: React.FC = () => {
           />
 
           {isStaff && (
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-xs cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Cohort</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-xs cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create Cohort</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  if (cohorts.length > 0) setDeleteCohortId(String(cohorts[0].id));
+                  setIsDeleteModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-xs cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Remove Cohort</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -142,17 +169,31 @@ export const CohortsView: React.FC = () => {
                     <h3 className="font-bold text-sm text-slate-900 dark:text-white">{c.name}</h3>
                     <p className="text-xs font-mono text-purple-600 dark:text-purple-400 font-bold">{c.code}</p>
                   </div>
-                  <span
-                    className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${
-                      c.status === 'Active'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : c.status === 'Completed'
-                        ? 'bg-purple-100 text-purple-800'
-                        : 'bg-amber-100 text-amber-800'
-                    }`}
-                  >
-                    {c.status}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${
+                        c.status === 'Active'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : c.status === 'Completed'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {c.status}
+                    </span>
+                    {isStaff && (
+                      <button
+                        onClick={() => {
+                          setDeleteCohortId(String(c.id));
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
+                        title="Remove Cohort"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="text-xs space-y-1 text-slate-600 dark:text-slate-300 pt-1">
@@ -176,7 +217,7 @@ export const CohortsView: React.FC = () => {
                 className="w-full mt-2 py-1.5 bg-slate-100 hover:bg-purple-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-purple-600 dark:text-purple-300 font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span>View Students (`GET /api/cohorts/{c.id}/students`)</span>
+                <span>View Students</span>
               </button>
             </div>
           ))
@@ -188,7 +229,7 @@ export const CohortsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Create Cohort (POST /api/cohorts)</h3>
+              <h3 className="font-bold text-sm">Create Cohort</h3>
               <button onClick={() => setIsAddModalOpen(false)} className="p-1 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
@@ -308,6 +349,74 @@ export const CohortsView: React.FC = () => {
 
             <div className="text-right pt-2 border-t">
               <button onClick={() => setSelectedCohort(null)} className="px-4 py-1.5 bg-slate-200 dark:bg-slate-700 text-xs rounded-lg">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REMOVE COHORT MODAL */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Trash2 className="w-4 h-4 text-rose-600" />
+                <span>Remove Cohort</span>
+              </h3>
+              <button onClick={() => setIsDeleteModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Select an academy cohort to permanently remove from the system database.
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-300">
+                  Select Cohort to Delete
+                </label>
+                <select
+                  value={deleteCohortId}
+                  onChange={e => setDeleteCohortId(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100"
+                >
+                  <option value="">-- Choose a Cohort --</option>
+                  {cohorts.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.code}) - ID: {c.id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {deleteCohortId && (
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-xl text-xs text-rose-800 dark:text-rose-200 space-y-1">
+                  <p className="font-semibold">⚠️ Confirmation Warning</p>
+                  <p className="text-[11px] opacity-90">
+                    Deleting cohort <strong>{cohorts.find(c => String(c.id) === String(deleteCohortId))?.name}</strong> will erase its class record and unassign linked students.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-3.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!deleteCohortId}
+                onClick={() => handleDeleteCohort(deleteCohortId)}
+                className="px-4 py-1.5 text-xs font-semibold bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-lg transition-all shadow-xs cursor-pointer"
+              >
+                Delete Cohort
+              </button>
             </div>
           </div>
         </div>

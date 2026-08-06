@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Search,
   Plus,
+  Trash2,
   UserCheck,
   FolderGit2,
   Filter,
@@ -36,6 +37,8 @@ export const StudentsView: React.FC = () => {
   const [selectedStudentDetail, setSelectedStudentDetail] = useState<Student | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteStudentId, setDeleteStudentId] = useState('');
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [isAssignMentorOpen, setIsAssignMentorOpen] = useState(false);
   const [isAssignCohortOpen, setIsAssignCohortOpen] = useState(false);
@@ -159,6 +162,18 @@ export const StudentsView: React.FC = () => {
     }
   };
 
+  const handleDeleteStudent = async (id: string) => {
+    if (!authHeader || !id) return;
+    try {
+      await apiService.deleteStudent(authHeader, id);
+      setIsDeleteModalOpen(false);
+      setDeleteStudentId('');
+      fetchInitialData();
+    } catch (err: any) {
+      setError(err);
+    }
+  };
+
   const openEditModal = (s: Student) => {
     setEditingStudent(s);
     setFormData({
@@ -184,7 +199,7 @@ export const StudentsView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Student Management</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            DoxabetaCloud Academy Interns (`GET /api/students`)
+            DoxabetaCloud Academy Interns
           </p>
         </div>
 
@@ -207,26 +222,39 @@ export const StudentsView: React.FC = () => {
           />
 
           {isStaff ? (
-            <button
-              onClick={() => {
-                setFormData({
-                  code: 'STU001',
-                  name: '',
-                  email: '',
-                  phone: '',
-                  mentorId: mentors.length > 0 ? String(mentors[0].id) : '',
-                  cohortId: cohorts.length > 0 ? String(cohorts[0].id) : '',
-                  track: 'Cloud & DevOps',
-                  status: 'ACTIVE',
-                  bio: ''
-                });
-                setIsAddModalOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-all cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Student</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setFormData({
+                    code: 'STU001',
+                    name: '',
+                    email: '',
+                    phone: '',
+                    mentorId: mentors.length > 0 ? String(mentors[0].id) : '',
+                    cohortId: cohorts.length > 0 ? String(cohorts[0].id) : '',
+                    track: 'Cloud & DevOps',
+                    status: 'ACTIVE',
+                    bio: ''
+                  });
+                  setIsAddModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Student</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  if (students.length > 0) setDeleteStudentId(String(students[0].id));
+                  setIsDeleteModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-all cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Remove Student</span>
+              </button>
+            </div>
           ) : (
             <span className="text-[11px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
               Read Only (Student Role)
@@ -409,6 +437,17 @@ export const StudentsView: React.FC = () => {
                           >
                             <UserPlus className="w-3.5 h-3.5" />
                           </button>
+
+                          <button
+                            onClick={() => {
+                              setDeleteStudentId(String(s.id));
+                              setIsDeleteModalOpen(true);
+                            }}
+                            className="p-1.5 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
+                            title="Remove Student"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </>
                       )}
                     </td>
@@ -426,7 +465,7 @@ export const StudentsView: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                {isAddModalOpen ? 'Create New Student (POST /api/students)' : 'Update Student (PUT /api/students/{id})'}
+                {isAddModalOpen ? 'Create New Student' : 'Update Student'}
               </h3>
               <button
                 onClick={() => {
@@ -582,7 +621,7 @@ export const StudentsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 w-full max-w-md space-y-4">
             <h3 className="font-bold text-sm">Assign Mentor to {editingStudent.name}</h3>
-            <p className="text-xs text-slate-500">PUT /api/students/{editingStudent.id}/mentor/{assignMentorId || '{mentorId}'}</p>
+            <p className="text-xs text-slate-500">Select a mentor to assign to this student.</p>
 
             <form onSubmit={handleAssignMentorSubmit} className="space-y-3 text-xs">
               <select
@@ -640,6 +679,74 @@ export const StudentsView: React.FC = () => {
 
             <div className="text-right pt-2 border-t">
               <button onClick={() => setSelectedStudentDetail(null)} className="px-4 py-1.5 bg-slate-200 dark:bg-slate-700 text-xs rounded-lg">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REMOVE STUDENT MODAL */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Trash2 className="w-4 h-4 text-rose-600" />
+                <span>Remove Student</span>
+              </h3>
+              <button onClick={() => setIsDeleteModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Select a student to permanently remove from DoxabetaCloud Academy database.
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-300">
+                  Select Student to Delete
+                </label>
+                <select
+                  value={deleteStudentId}
+                  onChange={e => setDeleteStudentId(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100"
+                >
+                  <option value="">-- Choose a Student --</option>
+                  {students.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.email}) - ID: {s.id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {deleteStudentId && (
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-xl text-xs text-rose-800 dark:text-rose-200 space-y-1">
+                  <p className="font-semibold">⚠️ Confirmation Warning</p>
+                  <p className="text-[11px] opacity-90">
+                    Deleting student <strong>{students.find(s => String(s.id) === String(deleteStudentId))?.name}</strong> will erase their account profile, assigned mentor linkage, and records.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-3.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!deleteStudentId}
+                onClick={() => handleDeleteStudent(deleteStudentId)}
+                className="px-4 py-1.5 text-xs font-semibold bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-lg transition-all shadow-xs cursor-pointer"
+              >
+                Delete Student
+              </button>
             </div>
           </div>
         </div>

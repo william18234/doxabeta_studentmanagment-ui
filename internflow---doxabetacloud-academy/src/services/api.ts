@@ -198,6 +198,9 @@ export const apiService = {
   createMentor: (authHeader: string, data: Partial<Mentor>): Promise<Mentor> =>
     request<Mentor>('/mentors', 'POST', authHeader, data),
 
+  deleteMentor: (authHeader: string, id: string): Promise<void> =>
+    request<void>(`/mentors/${id}`, 'DELETE', authHeader),
+
   getMentorStudents: async (authHeader: string, mentorId: string): Promise<Student[]> => {
     const res = await request<any>(`/mentors/${mentorId}/students`, 'GET', authHeader);
     return extractArray<Student>(res, ['students', 'mentees']);
@@ -214,6 +217,9 @@ export const apiService = {
 
   createCohort: (authHeader: string, data: Partial<Cohort>): Promise<Cohort> =>
     request<Cohort>('/cohorts', 'POST', authHeader, data),
+
+  deleteCohort: (authHeader: string, id: string): Promise<void> =>
+    request<void>(`/cohorts/${id}`, 'DELETE', authHeader),
 
   getCohortStudents: async (authHeader: string, cohortId: string): Promise<Student[]> => {
     const res = await request<any>(`/cohorts/${cohortId}/students`, 'GET', authHeader);
@@ -237,7 +243,7 @@ export const apiService = {
     return extractArray<Review>(res, ['reviews']);
   },
 
-  createReview: (authHeader: string, data: Partial<Review>): Promise<Review> =>
+  createReview: (authHeader: string, data: { studentId: number; mentorId: number; reviewDate: string; score?: number; learningOutcomes?: string; notes?: string; nextSteps?: string } | Partial<Review>): Promise<Review> =>
     request<Review>('/reviews', 'POST', authHeader, data),
 
   // Assignment Management
@@ -247,10 +253,13 @@ export const apiService = {
     return extractArray<Assignment>(res, ['assignments']);
   },
 
-  submitAssignment: (authHeader: string, data: Partial<Assignment>): Promise<Assignment> =>
+  submitAssignment: (authHeader: string, data: { studentId: number; title: string; description?: string } | Partial<Assignment>): Promise<Assignment> =>
     request<Assignment>('/assignments', 'POST', authHeader, data),
 
-  gradeAssignment: (authHeader: string, id: string, data: { score: number; feedback?: string }): Promise<Assignment> =>
+  deleteAssignment: (authHeader: string, id: string): Promise<void> =>
+    request<void>(`/assignments/${id}`, 'DELETE', authHeader),
+
+  gradeAssignment: (authHeader: string, id: string, data: { grade: number; feedback?: string }): Promise<Assignment> =>
     request<Assignment>(`/assignments/${id}/grade`, 'PUT', authHeader, data),
 
   // Admin Dashboard

@@ -94,13 +94,13 @@ export const AdminView: React.FC = () => {
           <div>
             <h2 className="text-lg font-bold text-rose-900 dark:text-rose-200">403 Access Forbidden</h2>
             <p className="text-xs text-rose-700 dark:text-rose-300 mt-0.5">
-              Admin priviliges are required to access `/api/admin/**`
+              Admin privileges are required to access this dashboard
             </p>
           </div>
         </div>
         <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
           You are currently logged in as <strong>{user?.name}</strong> with role <strong>{user?.role}</strong>.
-          The backend security model strictly restricts access to administrative endpoints (`/api/admin/overview`, `/api/admin/raw-json`, `/api/admin/seed`) to users with role `ADMIN`.
+          The backend security model strictly restricts access to administrative tools to users with role `ADMIN`.
         </p>
         <div className="p-3 bg-white/80 dark:bg-slate-900/80 rounded-xl border border-rose-200 dark:border-rose-800 text-xs">
           <p className="font-semibold text-slate-800 dark:text-slate-200">Want to test Admin view?</p>
@@ -128,7 +128,7 @@ export const AdminView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Admin Control Dashboard</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            System metrics, database seed & raw JSON inspect (`/api/admin/**`)
+            System metrics, database seed & raw JSON inspect
           </p>
         </div>
 
@@ -136,10 +136,10 @@ export const AdminView: React.FC = () => {
           <button
             onClick={handleSeedDatabase}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer"
-            title="POST /api/admin/seed - Reset database to baseline"
+            title="Reset database to baseline"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Seed Baseline Data (`POST /seed`)</span>
+            <span>Seed Baseline Data</span>
           </button>
         </div>
       </div>
@@ -154,7 +154,7 @@ export const AdminView: React.FC = () => {
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          Overview Statistics (`GET /api/admin/overview`)
+          Overview Statistics
         </button>
 
         <button
@@ -165,7 +165,7 @@ export const AdminView: React.FC = () => {
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          Raw Database JSON (`GET /api/admin/raw-json`)
+          Raw Database JSON
         </button>
       </div>
 
@@ -246,7 +246,7 @@ export const AdminView: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-              Response from GET `/api/admin/raw-json`
+              Raw Database Output
             </span>
 
             <div className="flex items-center gap-2">

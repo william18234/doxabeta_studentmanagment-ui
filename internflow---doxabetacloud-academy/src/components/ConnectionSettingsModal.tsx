@@ -75,7 +75,7 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
                   <Globe className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <span className="text-[10px] opacity-80 leading-relaxed">
-                  `onrender.com/api` (Live Production API)
+                  Live Production API
                 </span>
               </button>
 
@@ -93,7 +93,7 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
                   <Database className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <span className="text-[10px] opacity-80 leading-relaxed">
-                  `/api` (Proxies backend or mock fallback)
+                  Express Proxy Endpoint
                 </span>
               </button>
 
@@ -111,7 +111,7 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
                   <Server className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 </div>
                 <span className="text-[10px] opacity-80 leading-relaxed">
-                  `localhost:8080/api` (Local dev server)
+                  Local Dev Server
                 </span>
               </button>
             </div>
@@ -156,7 +156,7 @@ export const ConnectionSettingsModal: React.FC<ConnectionSettingsModalProps> = (
                 className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg text-xs transition-all shadow-xs cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${testResult.status === 'testing' ? 'animate-spin' : ''}`} />
-                <span>Test Backend Health (`/api/health`)</span>
+                <span>Test Backend Health</span>
               </button>
 
               {testResult.status === 'success' && (
